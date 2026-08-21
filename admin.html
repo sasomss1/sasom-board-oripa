@@ -459,7 +459,7 @@
 <div class="overlay" id="lastOneOverlay" onclick="if(event.target===this) closePicker('lastOneOverlay')">
   <div class="pick-modal">
     <div class="pick-modal-head"><h3><span data-th>เพิ่มรางวัล Last One</span><span data-en>Add Last One prize</span></h3><span class="close-x" onclick="closePicker('lastOneOverlay')">✕</span></div>
-    <div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Item name</span></label><input type="text" id="loName" placeholder=""></div>
+    <div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Product Name</span></label><input type="text" id="loName" placeholder=""></div>
     <div class="field"><label><span data-th>ราคา</span><span data-en>Price</span></label><div class="prefix-input"><span>฿</span><input type="number" id="loPrice" placeholder=""></div></div>
     <div class="btn-row" style="margin-top:8px;">
       <div class="btn-cancel" onclick="closePicker('lastOneOverlay')"><span data-th>ยกเลิก</span><span data-en>Cancel</span></div>
@@ -485,14 +485,14 @@
           <label><span data-th>ลิงก์สินค้า SASOM</span><span data-en>SASOM product link</span></label>
           <div class="link-fetch-row">
             <input type="text" id="sasomLink" placeholder="">
-            <button onclick="fetchFromLink()"><span data-th>ดึงข้อมูล</span><span data-en>Fetch</span></button>
+            <button onclick="fetchFromLink()"><span data-th>ดึงข้อมูล</span><span data-en>Search</span></button>
           </div>
         </div>
         <div id="fetchedPreview"></div>
       </div>
 
       <div id="manualFields" style="display:none;">
-        <div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Item name</span></label><input type="text" id="manualName" placeholder=""></div>
+        <div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Product Name</span></label><input type="text" id="manualName" placeholder=""></div>
         <div class="field"><label><span data-th>รูปภาพ (ลิงก์)</span><span data-en>Image (URL)</span></label><input type="text" id="manualImg" placeholder=""></div>
         <div class="field"><label>SKU <span class="hint">(<span data-th>ถ้ามี</span><span data-en>optional</span>)</span></label><input type="text" id="manualSku" placeholder=""></div>
       </div>
@@ -869,19 +869,20 @@ function fetchFromLink(){
         return;
       }
       wizProduct = {name: res.title || '', sku: res.sku || '', img: res.image || ''};
-      renderFetchedPreview();
+      renderFetchedPreview(res.warning);
     })
     .catch(function(err){
       box.innerHTML = '<p class="hint" style="margin-top:12px;">Fetch failed: '+err.message+'</p>';
     });
 }
 
-function renderFetchedPreview(){
+function renderFetchedPreview(warning){
   var box = document.getElementById('fetchedPreview');
   box.innerHTML =
     '<div style="margin-top:14px;">'+
       (wizProduct.img ? '<img src="'+wizProduct.img+'" style="width:64px; height:64px; border-radius:9px; object-fit:cover; margin-bottom:12px;">' : '')+
-      '<div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Item name</span></label><input type="text" id="fetchedName" value="'+(wizProduct.name||'').replace(/"/g,'&quot;')+'" oninput="wizProduct.name=this.value"></div>'+
+      (warning ? '<p class="hint" style="margin:0 0 10px; color:#C0392B;">'+warning+'</p>' : '')+
+      '<div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Product Name</span></label><input type="text" id="fetchedName" value="'+(wizProduct.name||'').replace(/"/g,'&quot;')+'" oninput="wizProduct.name=this.value"></div>'+
       '<div class="field" style="margin-bottom:0;"><label>SKU</label><input type="text" id="fetchedSku" value="'+(wizProduct.sku||'').replace(/"/g,'&quot;')+'" oninput="wizProduct.sku=this.value"></div>'+
     '</div>';
 }
