@@ -852,18 +852,37 @@ function slugToName(slug){
 function fetchFromLink(){
   var link = document.getElementById('sasomLink').value.trim();
   if(!link){ return; }
-  // MOCK fetch — a real implementation needs a real SASOM API/backend call
-  var parts = link.split('/').filter(Boolean);
-  var slug = parts[parts.length-1] || 'sasom-product';
-  var name = slugToName(slug.split('?')[0]);
-  var sku = slug.split('?')[0].toUpperCase().slice(0,28);
-  wizProduct = {name:name, sku:sku, img:''};
+  var box = document.getElementById('fetchedPreview');
+
+  if(!apiConfigured()){
+    box.innerHTML = '<p class="hint" style="margin-top:12px;">API_URL not set — cannot fetch real data</p>';
+    return;
+  }
+
+  box.innerHTML = '<p class="hint" style="margin-top:12px;">กำลังดึงข้อมูล... / Fetching...</p>';
+
+  fetch(API_URL + '?action=fetchProduct&url=' + encodeURIComponent(link))
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.ok){
+        box.innerHTML = '<p class="hint" style="margin-top:12px;">Fetch error: '+res.error+'</p>';
+        return;
+      }
+      wizProduct = {name: res.title || '', sku: res.sku || '', img: res.image || ''};
+      renderFetchedPreview();
+    })
+    .catch(function(err){
+      box.innerHTML = '<p class="hint" style="margin-top:12px;">Fetch failed: '+err.message+'</p>';
+    });
+}
+
+function renderFetchedPreview(){
   var box = document.getElementById('fetchedPreview');
   box.innerHTML =
-    '<div class="product-mini-card" style="margin-top:14px; border-bottom:none; padding-bottom:0;">'+
-      '<div class="pmc-noimg"></div>'+
-      '<div><div class="pmc-name">'+name+'</div><div class="pmc-sub">SKU · '+sku+'</div>'+
-      '</div>'+
+    '<div style="margin-top:14px;">'+
+      (wizProduct.img ? '<img src="'+wizProduct.img+'" style="width:64px; height:64px; border-radius:9px; object-fit:cover; margin-bottom:12px;">' : '')+
+      '<div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Item name</span></label><input type="text" id="fetchedName" value="'+(wizProduct.name||'').replace(/"/g,'&quot;')+'" oninput="wizProduct.name=this.value"></div>'+
+      '<div class="field" style="margin-bottom:0;"><label>SKU</label><input type="text" id="fetchedSku" value="'+(wizProduct.sku||'').replace(/"/g,'&quot;')+'" oninput="wizProduct.sku=this.value"></div>'+
     '</div>';
 }
 
