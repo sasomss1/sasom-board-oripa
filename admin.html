@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="th" data-lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SASOM Oripa Board - Create</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dark:#1B1B1B;
+    --accent:#C9FF00;
+    --gray-bg:#F2F2F2;
+    --gray-line:#E7E7E7;
+    --sub:#8A8A8A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter','Noto Sans Thai',sans-serif;
+    color:var(--dark);
+    background:#F7F7F7;
+    padding:24px;
+    display:flex;
+    justify-content:center;
+  }
+  .modal{width:100%; max-width:960px; background:#fff; border-radius:20px; padding:32px 36px 36px; box-shadow:0 10px 40px rgba(0,0,0,.08);}
+  .modal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:20px; flex-wrap:wrap;}
+  .modal-head h1{font-size:22px; font-weight:600; margin:0;}
+  .head-right{display:flex; align-items:center; gap:12px;}
+  .close-x{font-size:22px; color:var(--sub); cursor:pointer; line-height:1;}
+
+  .seller-switcher{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
+  .seller-pill{background:var(--gray-bg); border-radius:999px; padding:6px 14px; font-size:12.5px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:6px;}
+  .seller-pill.active{background:var(--dark); color:#fff;}
+  .seller-pill .dot{width:6px; height:6px; border-radius:50%; background:var(--accent);}
+
+  .toggle-pill{display:flex; background:var(--gray-bg); border-radius:999px; padding:3px; gap:2px; font-weight:500; font-size:13px; cursor:pointer; user-select:none; flex-shrink:0;}
+  .toggle-pill .opt{padding:7px 16px; border-radius:999px; color:var(--sub); transition:.15s;}
+  .toggle-pill .opt.active{background:var(--dark); color:#fff;}
+
+  .role-banner{
+    display:flex; align-items:center; gap:8px; background:#FFF6DC; border:1px solid #F0E0A8;
+    color:#6B5900; border-radius:10px; padding:9px 14px; font-size:12.5px; margin-bottom:18px;
+  }
+
+  .card{border:1px solid var(--gray-line); border-radius:16px; padding:26px 28px; margin-bottom:20px;}
+  .card h2{font-size:17px; font-weight:600; margin:0 0 4px;}
+  .card .desc{font-size:13px; color:var(--sub); margin:0 0 22px;}
+  .card-head-row{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:22px;}
+  .card-head-row h2{margin-bottom:4px;}
+  .change-btn{border:1px solid var(--gray-line); background:#fff; border-radius:9px; padding:8px 16px; font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap; flex-shrink:0;}
+  .change-btn:disabled{opacity:.4; cursor:not-allowed;}
+
+  label{display:block; font-size:13.5px; font-weight:500; margin-bottom:8px;}
+  .field{margin-bottom:20px;}
+  .field:last-child{margin-bottom:0;}
+  input, select{width:100%; border:1px solid var(--gray-line); background:var(--gray-bg); border-radius:10px; padding:13px 16px; font-size:14px; color:var(--dark); font-family:inherit; appearance:none;}
+  input:disabled{opacity:.6;}
+  input::placeholder{color:var(--sub);}
+  .row2{display:flex; gap:20px;}
+  .row2 .field{flex:1;}
+  .row3{display:flex; gap:20px;}
+  .row3 .field{flex:1;}
+  .row-label{display:flex; justify-content:space-between; align-items:baseline;}
+  .hint{font-size:12.5px; color:var(--sub); font-weight:400;}
+  .prefix-input{position:relative;}
+  .prefix-input span{position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:14px; color:var(--dark);}
+  .prefix-input input{padding-left:34px;}
+  .suffix-input{position:relative;}
+  .suffix-input span{position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:13px; color:var(--sub);}
+  .suffix-input input{padding-right:34px;}
+
+  .summary{background:var(--dark); border-radius:16px; padding:18px 20px; margin:22px 0 0;}
+  .summary-top{display:flex; justify-content:space-between; align-items:center;}
+  .summary-top span:first-child{color:#fff; font-size:14px;}
+  .summary-top span:last-child{color:var(--accent); font-weight:600; font-size:22px;}
+  .summary-counts{display:flex; gap:12px; margin-top:14px;}
+  .count-box{flex:1; background:#fff; border-radius:12px; padding:12px 16px;}
+  .count-box .label{font-size:12.5px; color:var(--sub); font-weight:400;}
+  .count-box .value{font-size:22px; font-weight:600; margin-top:2px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:4px;}
+  .stat-card{background:var(--gray-bg); border-radius:12px; padding:14px 14px;}
+  .stat-card .l{font-size:11.5px; color:var(--sub); font-weight:400; margin-bottom:4px; line-height:1.3;}
+  .stat-card .v{font-size:17px; font-weight:600;}
+  .stat-card.accent{background:var(--dark);}
+  .stat-card.accent .l{color:#C9C9C9;}
+  .stat-card.accent .v{color:var(--accent);}
+
+  .tier-table{margin-top:18px; border:1px solid var(--gray-line); border-radius:14px; overflow:hidden;}
+  .tier-row{display:grid; grid-template-columns:52px 1fr 84px 52px 96px 84px; gap:10px; align-items:center; padding:9px 14px; border-bottom:1px solid var(--gray-line); font-size:13px;}
+  .tier-row.head{background:var(--gray-bg); font-weight:500; font-size:11.5px; color:var(--sub); text-transform:uppercase; letter-spacing:.02em;}
+  .tier-row:last-child{border-bottom:none;}
+  .tier-row.total{background:var(--dark); color:#fff; font-weight:500;}
+  .tier-row.total .tier-label{color:#fff;}
+  .tier-row.zero{opacity:.4;}
+  .tier-label{font-weight:500;}
+  .tier-item-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--sub);}
+  .tier-item-name .nh-tag{background:var(--gray-bg); color:var(--dark); font-size:10px; font-weight:500; padding:1px 6px; border-radius:5px; margin-left:6px;}
+  .tier-row.total .tier-item-name{color:#fff;}
+  .tier-cost, .tier-avg, .tier-price, .tier-qty{font-weight:500; text-align:right;}
+
+  .section-block{border:1px solid var(--gray-line); border-radius:16px; margin-bottom:16px; overflow:hidden;}
+  .section-block .section-row{border:none; border-radius:0; margin-bottom:0;}
+  .mini-item-list{padding:0 16px 16px;}
+  .mini-item-list:empty{display:none;}
+  .mini-item{display:flex; align-items:center; gap:10px; background:var(--gray-bg); border-radius:10px; padding:8px 12px; margin-top:8px; font-size:13px;}
+  .mini-item img{width:32px; height:32px; border-radius:7px; object-fit:cover; flex-shrink:0; background:#fff;}
+  .mini-item .mi-noimg{width:32px; height:32px; border-radius:7px; background:#E2E2E2; flex-shrink:0;}
+  .mini-item .mi-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500;}
+  .mini-item .mi-sub{color:var(--sub); font-size:11.5px; margin-top:1px;}
+  .mini-item .mi-price{font-weight:500; white-space:nowrap;}
+  .mini-item .mi-remove{color:#B5B5B5; cursor:pointer; font-size:15px; padding:2px 4px; flex-shrink:0;}
+
+  .section-row{border:1px solid var(--gray-line); border-radius:16px; padding:20px 24px; display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+  .section-title{font-weight:500; font-size:16px; display:flex; align-items:center; gap:8px;}
+  .badge-count{background:var(--gray-bg); border-radius:999px; padding:3px 11px; font-size:12.5px; font-weight:500; color:var(--dark);}
+  .section-sub{font-size:12.5px; color:var(--sub); margin-top:4px;}
+  .add-btn{background:var(--dark); color:#fff; border:none; border-radius:9px; padding:10px 18px; font-size:13.5px; font-weight:500; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:6px; flex-shrink:0;}
+  .add-btn:disabled{opacity:.4; cursor:not-allowed;}
+
+  .seller-card-box{background:var(--gray-bg); border-radius:12px; padding:16px 18px; display:flex; align-items:flex-start; gap:12px;}
+  .seller-card-box .icon{font-size:17px; margin-top:1px;}
+  .seller-card-box .email{font-weight:500; font-size:15px;}
+  .seller-card-box .sub{font-size:12.5px; color:var(--sub); margin-top:2px;}
+
+  .btn-row{display:flex; gap:14px; margin-top:26px;}
+  .btn-cancel, .btn-confirm{flex:1; border-radius:12px; padding:16px; font-size:15px; font-weight:500; cursor:pointer; text-align:center;}
+  .btn-cancel{background:#fff; border:1px solid var(--gray-line); color:var(--dark);}
+  .btn-confirm{background:var(--dark); border:none; color:#fff;}
+  .btn-confirm.disabled{opacity:.4; cursor:not-allowed;}
+
+  [data-en]{display:none;}
+  html[data-lang="en"] [data-en]{display:revert;}
+  html[data-lang="en"] [data-th]{display:none;}
+
+  .color-field, .email-field{width:100%; border:1px solid var(--gray-line); background:var(--gray-bg); border-radius:10px; padding:13px 16px; font-size:14px; color:var(--dark); display:flex; align-items:center; justify-content:space-between; cursor:pointer;}
+  .color-field-inner{display:flex; align-items:center; gap:10px;}
+  .color-dot{width:16px; height:16px; border-radius:50%; flex-shrink:0;}
+  .placeholder{color:var(--sub);}
+  .chev{color:var(--sub); font-size:16px;}
+
+  .overlay{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:50; padding:20px;}
+  .overlay.open{display:flex;}
+  .pick-modal{width:100%; max-width:460px; background:#fff; border-radius:20px; padding:26px 26px 30px; box-shadow:0 20px 60px rgba(0,0,0,.25); max-height:88vh; overflow-y:auto;}
+  .pick-modal.wide{max-width:600px;}
+  .pick-modal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
+  .pick-modal-head h3{font-size:19px; font-weight:600; margin:0;}
+  .pick-option{display:flex; align-items:center; gap:14px; border:1px solid var(--gray-line); border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:.15s;}
+  .pick-option:last-child{margin-bottom:0;}
+  .pick-option:hover{border-color:#C9C9C9; background:#FAFAFA;}
+  .pick-option .swatch{width:26px; height:26px; border-radius:50%; flex-shrink:0;}
+  .pick-option .name{font-size:14.5px; font-weight:500;}
+  .pick-new-row{display:flex; gap:8px; margin-top:14px;}
+  .pick-new-row input{flex:1;}
+  .pick-new-row button{background:var(--dark); color:#fff; border:none; border-radius:9px; padding:0 16px; font-weight:500; font-size:13px; cursor:pointer;}
+
+  /* --- add-item wizard --- */
+  .wiz-tabs{display:flex; gap:8px; margin-bottom:20px;}
+  .wiz-tab{flex:1; text-align:center; padding:10px; border-radius:9px; background:var(--gray-bg); font-size:13.5px; font-weight:500; cursor:pointer; color:var(--sub);}
+  .wiz-tab.active{background:var(--dark); color:#fff;}
+  .link-fetch-row{display:flex; gap:8px;}
+  .link-fetch-row input{flex:1;}
+  .link-fetch-row button{background:var(--dark); color:#fff; border:none; border-radius:9px; padding:0 16px; font-weight:500; font-size:13px; cursor:pointer; white-space:nowrap;}
+  .fetch-note{font-size:12px; color:var(--sub); margin-top:6px;}
+  .raw-row{display:flex; align-items:flex-start; gap:10px; background:var(--gray-bg); border-radius:10px; padding:12px 14px; margin-top:16px; cursor:pointer;}
+  .raw-row input{width:17px; height:17px; margin-top:2px; accent-color:var(--dark); flex-shrink:0;}
+  .raw-row .rr-title{font-weight:500; font-size:13.5px;}
+  .raw-row .rr-sub{font-size:12px; color:var(--sub); margin-top:2px;}
+
+  .product-mini-card{display:flex; gap:14px; align-items:flex-start; padding-bottom:18px; margin-bottom:18px; border-bottom:1px solid var(--gray-line);}
+  .product-mini-card img{width:64px; height:64px; border-radius:9px; object-fit:cover; flex-shrink:0; background:var(--gray-bg);}
+  .product-mini-card .pmc-noimg{width:64px; height:64px; border-radius:9px; background:var(--gray-bg); flex-shrink:0;}
+  .product-mini-card .pmc-name{font-weight:600; font-size:15px; line-height:1.3;}
+  .product-mini-card .pmc-sub{color:var(--sub); font-size:12.5px; margin-top:4px;}
+
+  .grade-co-tabs{display:flex; gap:8px; margin-bottom:16px;}
+  .grade-co-tab{flex:1; text-align:center; padding:10px; border-radius:999px; border:1px solid var(--gray-line); background:#fff; font-weight:600; font-size:13.5px; cursor:pointer;}
+  .grade-co-tab.active{background:var(--dark); color:#fff; border-color:var(--dark);}
+  .grade-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px;}
+  .grade-cell{border:1px solid var(--gray-line); border-radius:12px; padding:16px 8px; text-align:center; cursor:pointer;}
+  .grade-cell .gc-val{font-size:19px; font-weight:600;}
+  .grade-cell .gc-sub{font-size:11px; color:var(--sub); margin-top:2px;}
+  .grade-cell.selected{background:var(--dark); border-color:var(--dark);}
+  .grade-cell.selected .gc-val, .grade-cell.selected .gc-sub{color:#fff;}
+
+  /* seller page view */
+  #sellerPageView{display:none;}
+  .back-link{font-size:13.5px; font-weight:500; color:var(--sub); cursor:pointer; display:inline-flex; align-items:center; gap:6px; margin-bottom:18px;}
+  .seller-page-head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;}
+  .seller-page-head .who{font-size:13px; color:var(--sub);}
+  .seller-page-head .who b{color:var(--dark);}
+  .top-row{display:flex; gap:12px; margin:18px 0 14px;}
+  .top-box{flex:1; background:#fff; border:1px solid var(--gray-line); border-radius:14px; padding:14px 16px; font-size:13px; color:var(--sub);}
+  .top-box b{display:block; color:var(--dark); font-size:16px; margin-top:2px; font-weight:500;}
+  .item-list{display:flex; flex-direction:column; gap:10px; margin-top:14px;}
+  .item{background:#fff; border:1px solid var(--gray-line); border-radius:14px; padding:12px 14px;}
+  .item-top{display:flex; align-items:center; gap:10px;}
+  .item-top img{width:34px; height:34px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--gray-bg);}
+  .item-badge{background:var(--dark); color:#fff; font-size:11px; font-weight:500; padding:3px 9px; border-radius:7px; flex-shrink:0;}
+  .item-info{flex:1; min-width:0;}
+  .item-name{font-size:13.5px; font-weight:600;}
+  .item-sub{font-size:11.5px; color:var(--sub);}
+  .status-tabs{display:flex; gap:8px;}
+  .status-tab{flex:1; text-align:center; padding:12px; border-radius:10px; border:1px solid var(--gray-line); background:#fff; font-weight:600; font-size:13.5px; cursor:pointer; color:var(--sub);}
+  .status-tab.active.prepare{background:#FFF6DC; border-color:#F0E0A8; color:#6B5900;}
+  .status-tab.active.on{background:#EAF7EA; border-color:#B7E3B7; color:#2E7D32;}
+  .status-tab.active.off{background:#FBEAEA; border-color:#E9B9B9; color:#C0392B;}
+
+  .status-badge{font-size:11px; font-weight:600; padding:3px 10px; border-radius:999px; display:inline-block;}
+  .status-badge.prepare{background:#FFF6DC; color:#6B5900;}
+  .status-badge.on{background:#EAF7EA; color:#2E7D32;}
+  .status-badge.off{background:#FBEAEA; color:#C0392B;}
+
+  .live-session{border:1px solid var(--gray-line); border-radius:12px; padding:14px 16px; margin-bottom:10px;}
+  .live-session-top{display:flex; justify-content:space-between; align-items:center;}
+  .live-session-date{font-weight:600; font-size:14px;}
+  .live-session-meta{font-size:12px; color:var(--sub); margin-top:2px;}
+  .live-session-actions{display:flex; gap:8px;}
+  .ls-btn{border:1px solid var(--gray-line); background:#fff; border-radius:8px; padding:7px 12px; font-size:12.5px; font-weight:500; cursor:pointer;}
+  .ls-btn.danger{color:#C0392B;}
+  .sold-row{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--gray-line); font-size:13px;}
+  .sold-row:first-child{border-top:none;}
+  .sold-row input[type=checkbox]{width:17px; height:17px; accent-color:var(--dark); flex-shrink:0;}
+  .sold-row .sr-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .sold-row .sr-qty{width:70px;}
+  .sold-row .sr-qty input{padding:6px 8px; font-size:12.5px;}
+</style>
+</head>
+<body>
+
+<div class="modal" id="formView">
+  <div class="seller-switcher" id="sellerSwitcher"></div>
+
+  <div class="modal-head">
+    <h1><span data-th>ขอสร้างบอร์ดใหม่</span><span data-en>Request New Board</span></h1>
+    <div class="head-right">
+      <div class="toggle-pill" onclick="setLang(document.documentElement.getAttribute('data-lang')==='th'?'en':'th')">
+        <div class="opt th active">TH</div>
+        <div class="opt en">EN</div>
+      </div>
+      <span class="close-x">✕</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span data-th>ข้อมูลบอร์ด</span><span data-en>Board Info</span></h2>
+
+    <div class="field">
+      <label><span data-th>ชื่อบอร์ด</span><span data-en>Board name</span></label>
+      <input type="text" id="boardName" placeholder="เช่น One Piece OP-08 — Blast Pop">
+    </div>
+
+    <div class="field">
+      <label><span data-th>สีซอง</span><span data-en>Envelope color</span></label>
+      <div class="color-field" onclick="openPicker('colorOverlay')">
+        <span class="color-field-inner">
+          <span id="colorDot" class="color-dot" style="display:none;"></span>
+          <span id="colorFieldText" class="placeholder"><span data-th>เลือกสี</span><span data-en>Select color</span></span>
+        </span>
+        <span class="chev">⌄</span>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <div class="row-label"><label><span data-th>จำนวนช่องทั้งหมด</span><span data-en>Total spots</span></label><span class="hint"><span data-th>สูงสุด 200</span><span data-en>Max 200</span></span></div>
+        <input type="number" id="totalSlots" placeholder="ตัวเลข" oninput="recalc()">
+      </div>
+      <div class="field">
+        <label><span data-th>ราคาต่อช่อง</span><span data-en>Price per spot</span></label>
+        <div class="prefix-input"><span>฿</span><input type="number" id="pricePerSpot" placeholder="ใส่ราคาขั้นต่ำ" oninput="recalc()"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label><span data-th>สถานะบอร์ด</span><span data-en>Board status</span></label>
+      <div class="status-tabs">
+        <div class="status-tab prepare active" data-status="PREPARE" onclick="setBoardStatus('PREPARE')">PREPARE</div>
+        <div class="status-tab on" data-status="ON" onclick="setBoardStatus('ON')">ON</div>
+        <div class="status-tab off" data-status="OFF" onclick="setBoardStatus('OFF')">OFF</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span data-th>ราคาและการคำนวณ</span><span data-en>Pricing & Calculation</span></h2>
+
+    <div class="row3">
+      <div class="field">
+        <label><span data-th>อัตราจ่ายคืนเป้าหมาย</span><span data-en>Target payout rate</span></label>
+        <div class="suffix-input"><input type="number" id="payoutRate" value="70" oninput="recalc()"><span>%</span></div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card accent"><div class="l"><span data-th>รายได้สูงสุด (Max Money)</span><span data-en>Max Money</span></div><div class="v" id="statMaxMoney">฿0</div></div>
+      <div class="stat-card"><div class="l"><span data-th>ต้นทุนรวม</span><span data-en>Total Cost</span></div><div class="v" id="statTotalCost">฿0</div></div>
+      <div class="stat-card"><div class="l"><span data-th>ต้นทุน %</span><span data-en>Cost %</span></div><div class="v" id="statCostPct">0%</div></div>
+      <div class="stat-card"><div class="l"><span data-th>กำไรถ้าขายหมด</span><span data-en>Profit if sold out</span></div><div class="v" id="statProfit">฿0</div></div>
+      <div class="stat-card"><div class="l"><span data-th>กำไร %</span><span data-en>Profit %</span></div><div class="v" id="statProfitPct">0%</div></div>
+      <div class="stat-card"><div class="l"><span data-th>มูลค่าเฉลี่ยต่อจุ่ม</span><span data-en>Avg prize / pull</span></div><div class="v" id="statAvgPrize">฿0</div></div>
+      <div class="stat-card"><div class="l"><span data-th>ราคาที่ไม่ขาดทุน (Break-even)</span><span data-en>Break-even price</span></div><div class="v" id="statBreakEven">฿0</div></div>
+      <div class="stat-card"><div class="l"><span data-th>จำนวนจุ่มทั้งหมด</span><span data-en>Total pulls</span></div><div class="v" id="statTotalPulls">0</div></div>
+    </div>
+
+    <div class="tier-table">
+      <div class="tier-row head">
+        <span data-th>ระดับ</span><span data-en>Tier</span>
+        <span><span data-th>รายการ</span><span data-en>Item</span></span>
+        <span class="tier-price"><span data-th>ราคา</span><span data-en>Price</span></span>
+        <span class="tier-qty"><span data-th>จำนวน</span><span data-en>Qty</span></span>
+        <span class="tier-cost"><span data-th>ต้นทุนรวม</span><span data-en>Total Cost</span></span>
+        <span class="tier-avg"><span data-th>เฉลี่ย</span><span data-en>Avg</span></span>
+      </div>
+      <div id="tierRows"></div>
+      <div class="tier-row total">
+        <span class="tier-label" data-th>รวม</span><span class="tier-label" data-en>Total</span>
+        <span></span><span></span>
+        <span id="tierTotalQty" class="tier-qty">0</span>
+        <span id="tierTotalCost" class="tier-cost">฿0</span>
+        <span id="tierTotalAvg" class="tier-avg">฿0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head-row">
+      <div>
+        <h2><span data-th>ประวัติการไลฟ์</span><span data-en>Live History</span></h2>
+      </div>
+      <button class="add-btn" onclick="openAddLiveModal()">+ <span data-th>เพิ่มวันไลฟ์</span><span data-en>Add live date</span></button>
+    </div>
+
+    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="stat-card"><div class="l"><span data-th>ไลฟ์ไปแล้ว (ครั้ง)</span><span data-en>Total live sessions</span></div><div class="v" id="liveCount">0</div></div>
+      <div class="stat-card"><div class="l"><span data-th>ไลฟ์ครั้งแรก</span><span data-en>First live</span></div><div class="v" id="liveFirst">—</div></div>
+      <div class="stat-card"><div class="l"><span data-th>ไลฟ์ล่าสุด</span><span data-en>Latest live</span></div><div class="v" id="liveLatest">—</div></div>
+    </div>
+
+    <div id="liveSessionList" style="margin-top:16px;"></div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-row">
+      <div>
+        <div class="section-title"><span data-th>รายการฮิต (สแลป)</span><span data-en>Hit List (Slabs)</span><span class="badge-count" id="hitCount">0</span></div>
+      </div>
+      <button class="add-btn" id="hitAddBtn" onclick="openAddModal('hit')">+ <span data-th>เพิ่ม</span><span data-en>Add</span></button>
+    </div>
+    <div class="mini-item-list" id="hitItemList"></div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-row">
+      <div>
+        <div class="section-title"><span data-th>รายการไม่ฮิต</span><span data-en>Non-Hit List</span><span class="badge-count" id="nonHitCount">0</span></div>
+      </div>
+      <button class="add-btn" id="nonHitAddBtn" onclick="openAddModal('nonhit')">+ <span data-th>เพิ่ม</span><span data-en>Add</span></button>
+    </div>
+    <div class="mini-item-list" id="nonHitItemList"></div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-row">
+      <div>
+        <div class="section-title"><span data-th>รางวัล Last One</span><span data-en>Last One Prize</span><span class="badge-count" id="lastOneCount">0</span></div>
+      </div>
+      <button class="add-btn" id="lastOneAddBtn" onclick="openLastOneModal()">+ <span data-th>เพิ่ม</span><span data-en>Add</span></button>
+    </div>
+    <div class="mini-item-list" id="lastOneItemList"></div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <div class="card-head-row">
+      <div>
+        <h2><span data-th>อีเมล Seller</span><span data-en>Seller Email</span></h2>
+      </div>
+      <button class="change-btn" id="sellerChangeBtn" onclick="openPicker('sellerOverlay')"><span data-th>เปลี่ยน</span><span data-en>Change</span></button>
+    </div>
+
+    <div class="seller-card-box">
+      <span class="icon">✉️</span>
+      <div>
+        <div class="email placeholder" id="sellerEmailText"><span data-th>ยังไม่ได้เลือก seller</span><span data-en>No seller selected</span></div>
+        <div class="sub"><span data-th>Seller ปัจจุบันของบอร์ดนี้</span><span data-en>Current seller for this board</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <div class="btn-cancel"><span data-th>ยกเลิก</span><span data-en>Cancel</span></div>
+    <div class="btn-confirm" onclick="confirmBoard()"><span data-th>ยืนยัน</span><span data-en>Confirm</span></div>
+  </div>
+  <div id="syncStatus" style="text-align:center; margin-top:10px; font-size:12px; color:var(--sub);"></div>
+</div>
+
+<!-- SELLER PAGE VIEW -->
+<div class="modal" id="sellerPageView">
+  <div class="modal-head">
+    <h1><span data-th>หน้าบอร์ดของ Seller</span><span data-en>Seller Board Page</span></h1>
+    <div class="head-right">
+      <div class="toggle-pill" onclick="setLang(document.documentElement.getAttribute('data-lang')==='th'?'en':'th')">
+        <div class="opt th active">TH</div>
+        <div class="opt en">EN</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="back-link" id="spBackLink" onclick="showForm()">← <span data-th>กลับไปแก้ไข / สร้างบอร์ดอื่น</span><span data-en>Back to edit / create another board</span></div>
+
+  <div class="seller-page-head">
+    <div>
+      <div class="who"><span data-th>Seller:</span><span data-en>Seller:</span> <b id="spSellerEmail">—</b></div>
+      <h1 style="margin:6px 0 0; font-size:24px;" id="spBoardName">—</h1>
+    </div>
+  </div>
+
+  <div class="top-row">
+    <div class="top-box"><span data-th>ราคาต่อช่อง</span><span data-en>Price / spot</span><b id="spPricePerSpot">฿0</b></div>
+    <div class="top-box"><span data-th>จำนวนช่อง</span><span data-en>Total spots</span><b id="spTotalSlots">0</b></div>
+  </div>
+
+  <div class="summary">
+    <div class="summary-top"><span><span data-th>มูลค่าบอร์ดรวม</span><span data-en>Total board value</span></span><span id="spMaxMoney">฿0</span></div>
+    <div class="summary-counts">
+      <div class="count-box"><div class="label"><span data-th>จำนวนฮิต</span><span data-en>Hit count</span></div><div class="value" id="spHitCount">0</div></div>
+      <div class="count-box"><div class="label"><span data-th>จำนวนไม่ฮิต</span><span data-en>Non-hit count</span></div><div class="value" id="spNonHitCount">0</div></div>
+    </div>
+  </div>
+
+  <div class="item-list" id="spItemList"></div>
+</div>
+
+<!-- COLOR PICKER -->
+<div class="overlay" id="colorOverlay" onclick="if(event.target===this) closePicker('colorOverlay')">
+  <div class="pick-modal">
+    <div class="pick-modal-head"><h3><span data-th>สีซอง</span><span data-en>Envelope color</span></h3><span class="close-x" onclick="closePicker('colorOverlay')">✕</span></div>
+    <div class="pick-option" onclick="pickColor('#2E7D46','เขียว','Green')"><span class="swatch" style="background:#2E7D46;"></span><span class="name"><span data-th>เขียว</span><span data-en>Green</span></span></div>
+    <div class="pick-option" onclick="pickColor('#8B2E22','แดง','Red')"><span class="swatch" style="background:#8B2E22;"></span><span class="name"><span data-th>แดง</span><span data-en>Red</span></span></div>
+    <div class="pick-option" onclick="pickColor('#1B1B1B','ดำ','Black')"><span class="swatch" style="background:#1B1B1B;"></span><span class="name"><span data-th>ดำ</span><span data-en>Black</span></span></div>
+  </div>
+</div>
+
+<!-- SELLER EMAIL PICKER -->
+<div class="overlay" id="sellerOverlay" onclick="if(event.target===this) closePicker('sellerOverlay')">
+  <div class="pick-modal">
+    <div class="pick-modal-head"><h3><span data-th>เลือก Seller</span><span data-en>Select seller</span></h3><span class="close-x" onclick="closePicker('sellerOverlay')">✕</span></div>
+    <div id="sellerOptionList"></div>
+    <div class="pick-new-row">
+      <input type="text" id="newSellerEmail" placeholder="new-seller@email.com">
+      <button onclick="addNewSeller()"><span data-th>เพิ่ม</span><span data-en>Add</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- LAST ONE MODAL (simple, unchanged) -->
+<div class="overlay" id="lastOneOverlay" onclick="if(event.target===this) closePicker('lastOneOverlay')">
+  <div class="pick-modal">
+    <div class="pick-modal-head"><h3><span data-th>เพิ่มรางวัล Last One</span><span data-en>Add Last One prize</span></h3><span class="close-x" onclick="closePicker('lastOneOverlay')">✕</span></div>
+    <div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Item name</span></label><input type="text" id="loName" placeholder="เช่น Playmat พิเศษ"></div>
+    <div class="field"><label><span data-th>ราคา</span><span data-en>Price</span></label><div class="prefix-input"><span>฿</span><input type="number" id="loPrice" placeholder="0"></div></div>
+    <div class="btn-row" style="margin-top:8px;">
+      <div class="btn-cancel" onclick="closePicker('lastOneOverlay')"><span data-th>ยกเลิก</span><span data-en>Cancel</span></div>
+      <div class="btn-confirm" onclick="confirmLastOne()"><span data-th>เพิ่ม</span><span data-en>Add</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ITEM WIZARD (hit / non-hit) -->
+<div class="overlay" id="itemOverlay" onclick="if(event.target===this) closePicker('itemOverlay')">
+  <div class="pick-modal wide">
+    <div class="pick-modal-head"><h3 id="itemModalTitle">—</h3><span class="close-x" onclick="closePicker('itemOverlay')">✕</span></div>
+
+    <!-- STEP 1: product source -->
+    <div id="wizStep1">
+      <div class="wiz-tabs">
+        <div class="wiz-tab active" id="tabLink" onclick="setProductSource('link')"><span data-th>ลิงก์ SASOM</span><span data-en>SASOM Link</span></div>
+        <div class="wiz-tab" id="tabManual" onclick="setProductSource('manual')"><span data-th>เพิ่มเอง</span><span data-en>Add Manually</span></div>
+      </div>
+
+      <div id="linkFields">
+        <div class="field">
+          <label><span data-th>ลิงก์สินค้า SASOM</span><span data-en>SASOM product link</span></label>
+          <div class="link-fetch-row">
+            <input type="text" id="sasomLink" placeholder="https://sasom.co.th/th/collectibles/...">
+            <button onclick="fetchFromLink()"><span data-th>ดึงข้อมูล</span><span data-en>Fetch</span></button>
+          </div>
+        </div>
+        <div id="fetchedPreview"></div>
+      </div>
+
+      <div id="manualFields" style="display:none;">
+        <div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Item name</span></label><input type="text" id="manualName" placeholder="เช่น Pokemon Pikachu VMAX ..."></div>
+        <div class="field"><label><span data-th>รูปภาพ (ลิงก์)</span><span data-en>Image (URL)</span></label><input type="text" id="manualImg" placeholder="https://..."></div>
+        <div class="field"><label>SKU <span class="hint">(<span data-th>ถ้ามี</span><span data-en>optional</span>)</span></label><input type="text" id="manualSku" placeholder=""></div>
+      </div>
+
+      <div class="raw-row" id="rawRow" onclick="document.getElementById('rawCheck').click()" style="display:none;">
+        <input type="checkbox" id="rawCheck" onclick="event.stopPropagation(); onRawToggle()">
+        <div>
+          <div class="rr-title"><span data-th>การ์ด Raw</span><span data-en>Raw card</span></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <div class="btn-cancel" onclick="closePicker('itemOverlay')"><span data-th>ยกเลิก</span><span data-en>Cancel</span></div>
+        <div class="btn-confirm" id="step1NextBtn" onclick="goToStep2()"><span data-th>ถัดไป</span><span data-en>Next</span></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: grade -->
+    <div id="wizStep2" style="display:none;">
+      <div class="product-mini-card" id="pmcBox"></div>
+
+      <label><span data-th>เกรด</span><span data-en>Grade</span></label>
+      <div class="grade-co-tabs">
+        <div class="grade-co-tab active" data-co="PSA" onclick="setGradeCompany('PSA')">PSA</div>
+        <div class="grade-co-tab" data-co="BGS" onclick="setGradeCompany('BGS')">BGS</div>
+        <div class="grade-co-tab" data-co="TAG" onclick="setGradeCompany('TAG')">TAG</div>
+        <div class="grade-co-tab" data-co="CGC" onclick="setGradeCompany('CGC')">CGC</div>
+      </div>
+      <div class="grade-grid" id="gradeGrid"></div>
+
+      <div class="btn-row">
+        <div class="btn-cancel" onclick="backToStep1()"><span data-th>← ย้อนกลับ</span><span data-en>← Back</span></div>
+        <div class="btn-confirm" id="step2NextBtn" onclick="goToStep3()"><span data-th>ถัดไป</span><span data-en>Next</span></div>
+      </div>
+    </div>
+
+    <!-- STEP 3: price / qty -->
+    <div id="wizStep3" style="display:none;">
+      <div class="product-mini-card" id="pmcBox2"></div>
+      <div class="row2">
+        <div class="field"><label><span data-th>ราคา</span><span data-en>Price</span></label><div class="prefix-input"><span>฿</span><input type="number" id="wizPrice" placeholder="0"></div></div>
+        <div class="field" id="wizQtyField"><label><span data-th>จำนวน</span><span data-en>Qty</span></label><input type="number" id="wizQty" value="1"></div>
+      </div>
+      <div class="btn-row">
+        <div class="btn-cancel" onclick="backFromStep3()"><span data-th>← ย้อนกลับ</span><span data-en>← Back</span></div>
+        <div class="btn-confirm" onclick="confirmWizardAdd()"><span data-th>เพิ่ม</span><span data-en>Add</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD LIVE DATE MODAL -->
+<div class="overlay" id="liveDateOverlay" onclick="if(event.target===this) closePicker('liveDateOverlay')">
+  <div class="pick-modal">
+    <div class="pick-modal-head"><h3><span data-th>เพิ่มวันไลฟ์</span><span data-en>Add live date</span></h3><span class="close-x" onclick="closePicker('liveDateOverlay')">✕</span></div>
+    <div class="field"><label><span data-th>วันที่ไลฟ์</span><span data-en>Live date</span></label><input type="date" id="liveDateInput"></div>
+    <div class="field"><label><span data-th>โน้ต (ถ้ามี)</span><span data-en>Note (optional)</span></label><input type="text" id="liveDateNote" placeholder="เช่น ไลฟ์รอบเช้า / TikTok"></div>
+    <div class="btn-row" style="margin-top:8px;">
+      <div class="btn-cancel" onclick="closePicker('liveDateOverlay')"><span data-th>ยกเลิก</span><span data-en>Cancel</span></div>
+      <div class="btn-confirm" onclick="confirmAddLiveDate()"><span data-th>เพิ่ม</span><span data-en>Add</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- RECORD SALES MODAL -->
+<div class="overlay" id="salesOverlay" onclick="if(event.target===this) closePicker('salesOverlay')">
+  <div class="pick-modal wide">
+    <div class="pick-modal-head">
+      <h3><span data-th>บันทึกยอดขาย</span><span data-en>Record sales</span> — <span id="salesModalDate"></span></h3>
+      <span class="close-x" onclick="closePicker('salesOverlay')">✕</span>
+    </div>
+    <p class="hint" style="margin-bottom:12px;"><span data-th>ติ๊กสินค้าที่ขายออกไปในไลฟ์ครั้งนี้ แล้วใส่จำนวนที่ขายได้</span><span data-en>Tick the items sold during this live session and enter the quantity sold</span></p>
+    <div id="salesItemList"></div>
+    <div class="btn-row" style="margin-top:16px;">
+      <div class="btn-cancel" onclick="closePicker('salesOverlay')"><span data-th>ยกเลิก</span><span data-en>Cancel</span></div>
+      <div class="btn-confirm" onclick="confirmSalesRecord()"><span data-th>บันทึก</span><span data-en>Save</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============== DATA (blank template) ==============
+var TIER_LADDER = ['SSS','SS+','SS','SS-','S+','S','S-','AA+','AA','AA-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','F+','F','F-'];
+
+var hitItems = [];       // {name, sku, img, condition, price}
+var nonHitItems = [];    // {name, sku, img, condition, isRaw, price, qty}
+var lastOneItem = null;  // {name, price}
+
+var sellerEmails = [
+  'invencollectible@gmail.com','sasominven@gmail.com','preorderdefect@gmail.com',
+  'siamdoxa@gmail.com','kenyu.kim0131@gmail.com','poom_jiraroj@hotmail.com',
+  'siravit.p@sasom.co.th','g.lertkom@gmail.com','bosskungjr@gmail.com'
+];
+var currentSellerEmail = null;
+var savedBoards = []; // {sellerEmail, boardName, stats, entriesSnapshot, lastOneSnapshot, status, liveSessions}
+var boardStatus = 'PREPARE'; // 'PREPARE' | 'ON' | 'OFF'
+var liveSessions = []; // {id, date, note, sales:[{label, sold, qty}]}
+
+var GRADE_SETS = {
+  PSA: [10,9,8,7,6,5,4,3,2,1].map(function(v){ return {val:v, sub:''}; }),
+  BGS: [
+    {val:10, sub:'Black Label'}, {val:10, sub:'Gold Label'}, {val:9.5, sub:'Gold Label'},
+    9,8,7,6,5,4,3,2,1
+  ].map(function(v){ return typeof v === 'object' ? v : {val:v, sub:''}; }),
+  TAG: [
+    {val:10, sub:'Pristine'}, {val:10, sub:'Gem Mint'}, 9,8.5,8,7.5,7,6.5,6,5.5,5,4.5,4,3.5,3,2.5,2,1.5,1
+  ].map(function(v){ return typeof v === 'object' ? v : {val:v, sub:''}; }),
+  CGC: [
+    {val:10, sub:'Pristine'}, {val:10, sub:'Gem Mint'}, 9.5,9,8.5,8,7.5,7,6.5,6,5.5,5,4.5,4,3.5,3,2.5,2,1.5,1
+  ].map(function(v){ return typeof v === 'object' ? v : {val:v, sub:''}; })
+};
+
+function fmt(n){ return '฿' + Math.round(n).toLocaleString('en-US'); }
+
+// ============== TIER TABLE (derived, read-only) ==============
+function getCombinedEntries(){
+  var entries = hitItems.map(function(h){ return {label:h.name, sku:h.sku, img:h.img, condition:h.condition, price:h.price, qty:1, nonHit:false}; })
+    .concat(nonHitItems.map(function(n){ return {label:n.name, sku:n.sku, img:n.img, condition:n.isRaw ? 'Raw' : n.condition, price:n.price, qty:n.qty, nonHit:true}; }));
+  entries.sort(function(a,b){ return b.price - a.price; });
+  return entries;
+}
+
+function buildTierRows(){
+  var wrap = document.getElementById('tierRows');
+  wrap.innerHTML = '';
+  var entries = getCombinedEntries();
+  var totalSlots = +document.getElementById('totalSlots').value || 0;
+
+  TIER_LADDER.forEach(function(tierName, i){
+    var e = entries[i];
+    var row = document.createElement('div');
+    row.className = 'tier-row' + (!e ? ' zero' : '');
+    if(e){
+      var rowCost = e.price * e.qty;
+      var rowAvg = totalSlots > 0 ? rowCost / totalSlots : 0;
+      row.innerHTML =
+        '<span class="tier-label">'+tierName+'</span>'+
+        '<span class="tier-item-name">'+e.label+(e.condition ? ' · '+e.condition : '')+(e.nonHit ? '<span class="nh-tag" data-th>ไม่ฮิต</span>' : '')+(e.nonHit ? '<span class="nh-tag" data-en>N/H</span>' : '')+'</span>'+
+        '<span class="tier-price">'+fmt(e.price)+'</span>'+
+        '<span class="tier-qty">'+e.qty+'</span>'+
+        '<span class="tier-cost">'+fmt(rowCost)+'</span>'+
+        '<span class="tier-avg">'+fmt(rowAvg)+'</span>';
+    } else {
+      row.innerHTML =
+        '<span class="tier-label">'+tierName+'</span>'+
+        '<span class="tier-item-name">—</span>'+
+        '<span class="tier-price">—</span>'+
+        '<span class="tier-qty">0</span>'+
+        '<span class="tier-cost">฿0</span>'+
+        '<span class="tier-avg">฿0</span>';
+    }
+    wrap.appendChild(row);
+  });
+}
+
+function miniImgHtml(img){
+  return img ? '<img src="'+img+'">' : '<div class="mi-noimg"></div>';
+}
+
+function renderMiniLists(){
+  var hitWrap = document.getElementById('hitItemList');
+  hitWrap.innerHTML = '';
+  hitItems.forEach(function(item, i){
+    var d = document.createElement('div');
+    d.className = 'mini-item';
+    d.innerHTML =
+      miniImgHtml(item.img)+
+      '<div style="flex:1; min-width:0;">'+
+        '<div class="mi-name">'+item.name+'</div>'+
+        '<div class="mi-sub">'+(item.sku ? 'SKU · '+item.sku+' · ' : '')+(item.condition||'')+'</div>'+
+      '</div>'+
+      '<div class="mi-price">'+fmt(item.price)+'</div>'+
+      '<span class="mi-remove" onclick="removeHitItem('+i+')">×</span>';
+    hitWrap.appendChild(d);
+  });
+
+  var nhWrap = document.getElementById('nonHitItemList');
+  nhWrap.innerHTML = '';
+  nonHitItems.forEach(function(item, i){
+    var d = document.createElement('div');
+    d.className = 'mini-item';
+    d.innerHTML =
+      miniImgHtml(item.img)+
+      '<div style="flex:1; min-width:0;">'+
+        '<div class="mi-name">'+item.name+'</div>'+
+        '<div class="mi-sub">'+(item.isRaw ? 'Raw' : (item.condition||''))+' · ×'+item.qty+'</div>'+
+      '</div>'+
+      '<div class="mi-price">'+fmt(item.price)+' <span style="color:var(--sub); font-weight:400;">/<span data-th>ใบ</span><span data-en>ea</span></span></div>'+
+      '<span class="mi-remove" onclick="removeNonHitItem('+i+')">×</span>';
+    nhWrap.appendChild(d);
+  });
+
+  var loWrap = document.getElementById('lastOneItemList');
+  loWrap.innerHTML = '';
+  if(lastOneItem){
+    var d2 = document.createElement('div');
+    d2.className = 'mini-item';
+    d2.innerHTML = '<div style="flex:1; min-width:0;"><div class="mi-name">'+lastOneItem.name+'</div></div><div class="mi-price">'+fmt(lastOneItem.price)+'</div><span class="mi-remove" onclick="removeLastOne()">×</span>';
+    loWrap.appendChild(d2);
+  }
+  document.getElementById('lastOneCount').textContent = lastOneItem ? 1 : 0;
+}
+
+function removeHitItem(i){ hitItems.splice(i,1); recalc(); }
+function removeNonHitItem(i){ nonHitItems.splice(i,1); recalc(); }
+function removeLastOne(){ lastOneItem = null; recalc(); }
+
+function recalc(){
+  var totalSlots = +document.getElementById('totalSlots').value || 0;
+  var pricePerSpot = +document.getElementById('pricePerSpot').value || 0;
+  var payoutRate = (+document.getElementById('payoutRate').value || 0) / 100;
+
+  buildTierRows();
+  renderMiniLists();
+
+  var entries = getCombinedEntries();
+  var totalQty = 0, ladderCost = 0, hitCount = hitItems.length, nonHitCount = 0;
+  entries.forEach(function(e){ totalQty += e.qty; ladderCost += e.price * e.qty; if(e.nonHit) nonHitCount += e.qty; });
+  var lastOneCost = lastOneItem ? lastOneItem.price : 0;
+  var totalCost = ladderCost + lastOneCost;
+
+  var maxMoney = pricePerSpot * totalSlots;
+  var costPct = maxMoney > 0 ? (totalCost / maxMoney) * 100 : 0;
+  var profit = maxMoney - totalCost;
+  var profitPct = maxMoney > 0 ? (profit / maxMoney) * 100 : 0;
+  var avgPrize = totalSlots > 0 ? ladderCost / totalSlots : 0;
+  var breakEven = (totalSlots > 0 && payoutRate > 0) ? ladderCost / (totalSlots * payoutRate) : 0;
+
+  document.getElementById('tierTotalQty').textContent = totalQty.toLocaleString('en-US');
+  document.getElementById('tierTotalCost').textContent = fmt(ladderCost);
+  document.getElementById('tierTotalAvg').textContent = fmt(avgPrize);
+  document.getElementById('statMaxMoney').textContent = fmt(maxMoney);
+  document.getElementById('statTotalCost').textContent = fmt(totalCost);
+  document.getElementById('statCostPct').textContent = costPct.toFixed(2) + '%';
+  document.getElementById('statProfit').textContent = fmt(profit);
+  document.getElementById('statProfitPct').textContent = profitPct.toFixed(2) + '%';
+  document.getElementById('statAvgPrize').textContent = fmt(avgPrize);
+  document.getElementById('statBreakEven').textContent = fmt(breakEven);
+  document.getElementById('statTotalPulls').textContent = totalSlots.toLocaleString('en-US');
+  document.getElementById('hitCount').textContent = hitCount;
+  document.getElementById('nonHitCount').textContent = nonHitCount;
+
+  return {totalSlots:totalSlots, pricePerSpot:pricePerSpot, maxMoney:maxMoney, totalCost:totalCost, costPct:costPct, profit:profit, profitPct:profitPct, avgPrize:avgPrize, breakEven:breakEven, hitCount:hitCount, nonHitCount:nonHitCount};
+}
+
+// ============== COLOR PICKER ==============
+function openPicker(id){ document.getElementById(id).classList.add('open'); }
+function closePicker(id){ document.getElementById(id).classList.remove('open'); }
+function pickColor(hex, nameTh, nameEn){
+  var dot = document.getElementById('colorDot');
+  dot.style.background = hex; dot.style.display = 'inline-block';
+  var textEl = document.getElementById('colorFieldText');
+  textEl.classList.remove('placeholder');
+  textEl.innerHTML = '<span data-th>'+nameTh+'</span><span data-en>'+nameEn+'</span>';
+  closePicker('colorOverlay');
+}
+
+// ============== SELLER PICKER ==============
+function buildSellerOptions(){
+  var wrap = document.getElementById('sellerOptionList');
+  wrap.innerHTML = '';
+  sellerEmails.forEach(function(email){
+    var d = document.createElement('div');
+    d.className = 'pick-option';
+    d.onclick = function(){ pickSeller(email); };
+    d.innerHTML = '<span class="swatch" style="background:var(--gray-bg); display:flex; align-items:center; justify-content:center; font-size:14px;">✉️</span><span class="name">'+email+'</span>';
+    wrap.appendChild(d);
+  });
+}
+function pickSeller(email){
+  currentSellerEmail = email;
+  var el = document.getElementById('sellerEmailText');
+  el.classList.remove('placeholder');
+  el.textContent = email;
+  closePicker('sellerOverlay');
+}
+function addNewSeller(){
+  var v = document.getElementById('newSellerEmail').value.trim();
+  if(!v) return;
+  sellerEmails.unshift(v);
+  buildSellerOptions();
+  pickSeller(v);
+  document.getElementById('newSellerEmail').value = '';
+}
+
+// ============== LAST ONE (simple modal) ==============
+function openLastOneModal(){
+  document.getElementById('loName').value = lastOneItem ? lastOneItem.name : '';
+  document.getElementById('loPrice').value = lastOneItem ? lastOneItem.price : '';
+  openPicker('lastOneOverlay');
+}
+function confirmLastOne(){
+  var name = document.getElementById('loName').value.trim();
+  var price = +document.getElementById('loPrice').value || 0;
+  if(!name || !price) return;
+  lastOneItem = {name:name, price:price};
+  closePicker('lastOneOverlay');
+  recalc();
+}
+
+// ============== ADD ITEM WIZARD (hit / non-hit) ==============
+var currentAddType = null;      // 'hit' | 'nonhit'
+var productSource = 'link';     // 'link' | 'manual'
+var isRawSelected = false;
+var wizProduct = null;          // {name, sku, img}
+var wizGradeCompany = 'PSA';
+var wizGrade = null;            // {val, sub}
+
+var addTypeLabels = {
+  hit: {th:'เพิ่มการ์ดฮิต', en:'Add hit card'},
+  nonhit: {th:'เพิ่มรางวัลไม่ฮิต', en:'Add non-hit prize'}
+};
+
+function openAddModal(type){
+  currentAddType = type;
+  productSource = 'link';
+  isRawSelected = false;
+  wizProduct = null;
+  wizGradeCompany = 'PSA';
+  wizGrade = null;
+
+  var lang = document.documentElement.getAttribute('data-lang');
+  document.getElementById('itemModalTitle').textContent = addTypeLabels[type][lang] || addTypeLabels[type].th;
+
+  document.getElementById('sasomLink').value = '';
+  document.getElementById('fetchedPreview').innerHTML = '';
+  document.getElementById('manualName').value = '';
+  document.getElementById('manualImg').value = '';
+  document.getElementById('manualSku').value = '';
+  document.getElementById('rawCheck').checked = false;
+  document.getElementById('rawRow').style.display = (type === 'nonhit') ? 'flex' : 'none';
+  document.getElementById('wizQtyField').style.display = (type === 'nonhit') ? 'block' : 'none';
+
+  setProductSource('link');
+  document.getElementById('wizStep1').style.display = 'block';
+  document.getElementById('wizStep2').style.display = 'none';
+  document.getElementById('wizStep3').style.display = 'none';
+  openPicker('itemOverlay');
+}
+
+function setProductSource(src){
+  productSource = src;
+  document.getElementById('tabLink').classList.toggle('active', src==='link');
+  document.getElementById('tabManual').classList.toggle('active', src==='manual');
+  document.getElementById('linkFields').style.display = src==='link' ? 'block' : 'none';
+  document.getElementById('manualFields').style.display = src==='manual' ? 'block' : 'none';
+}
+
+function onRawToggle(){
+  isRawSelected = document.getElementById('rawCheck').checked;
+}
+
+function slugToName(slug){
+  return slug.replace(/[-_]+/g,' ').replace(/\.(html?|php)$/i,'').replace(/\b\w/g, function(c){ return c.toUpperCase(); }).trim();
+}
+
+function fetchFromLink(){
+  var link = document.getElementById('sasomLink').value.trim();
+  if(!link){ return; }
+  // MOCK fetch — a real implementation needs a real SASOM API/backend call
+  var parts = link.split('/').filter(Boolean);
+  var slug = parts[parts.length-1] || 'sasom-product';
+  var name = slugToName(slug.split('?')[0]);
+  var sku = slug.split('?')[0].toUpperCase().slice(0,28);
+  wizProduct = {name:name, sku:sku, img:''};
+  var box = document.getElementById('fetchedPreview');
+  box.innerHTML =
+    '<div class="product-mini-card" style="margin-top:14px; border-bottom:none; padding-bottom:0;">'+
+      '<div class="pmc-noimg"></div>'+
+      '<div><div class="pmc-name">'+name+'</div><div class="pmc-sub">SKU · '+sku+'</div>'+
+      '</div>'+
+    '</div>';
+}
+
+function goToStep2(){
+  if(currentAddType === 'nonhit' && isRawSelected){
+    // Raw card: skip grade step entirely, go straight to price/qty
+    wizProduct = productSource === 'link'
+      ? (wizProduct || {name:document.getElementById('sasomLink').value || 'Raw card', sku:'', img:''})
+      : {name:document.getElementById('manualName').value || 'Raw card', sku:document.getElementById('manualSku').value, img:document.getElementById('manualImg').value};
+    wizGrade = null;
+    renderStep3ProductBox();
+    document.getElementById('wizStep1').style.display = 'none';
+    document.getElementById('wizStep3').style.display = 'block';
+    return;
+  }
+
+  if(productSource === 'manual'){
+    var name = document.getElementById('manualName').value.trim();
+    if(!name) return;
+    wizProduct = {name:name, sku:document.getElementById('manualSku').value.trim(), img:document.getElementById('manualImg').value.trim()};
+  } else {
+    if(!wizProduct){ return; } // must fetch first
+  }
+
+  renderProductMiniCard('pmcBox');
+  setGradeCompany('PSA');
+  document.getElementById('wizStep1').style.display = 'none';
+  document.getElementById('wizStep2').style.display = 'block';
+}
+
+function backToStep1(){
+  document.getElementById('wizStep2').style.display = 'none';
+  document.getElementById('wizStep1').style.display = 'block';
+}
+
+function renderProductMiniCard(targetId){
+  var el = document.getElementById(targetId);
+  el.innerHTML =
+    (wizProduct.img ? '<img src="'+wizProduct.img+'">' : '<div class="pmc-noimg"></div>')+
+    '<div><div class="pmc-name">'+wizProduct.name+'</div>'+(wizProduct.sku ? '<div class="pmc-sub">SKU · '+wizProduct.sku+'</div>' : '')+'</div>';
+}
+
+function setGradeCompany(co){
+  wizGradeCompany = co;
+  wizGrade = null;
+  document.querySelectorAll('.grade-co-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.co === co); });
+  var grid = document.getElementById('gradeGrid');
+  grid.innerHTML = '';
+  GRADE_SETS[co].forEach(function(g){
+    var cell = document.createElement('div');
+    cell.className = 'grade-cell';
+    cell.innerHTML = '<div class="gc-val">'+g.val+'</div>'+(g.sub ? '<div class="gc-sub">'+g.sub+'</div>' : '');
+    cell.onclick = function(){
+      document.querySelectorAll('.grade-cell').forEach(function(c){ c.classList.remove('selected'); });
+      cell.classList.add('selected');
+      wizGrade = g;
+    };
+    grid.appendChild(cell);
+  });
+}
+
+function goToStep3(){
+  if(!wizGrade){ return; }
+  renderStep3ProductBox();
+  document.getElementById('wizStep2').style.display = 'none';
+  document.getElementById('wizStep3').style.display = 'block';
+  document.getElementById('wizPrice').value = '';
+  document.getElementById('wizQty').value = 1;
+}
+
+function renderStep3ProductBox(){
+  var el = document.getElementById('pmcBox2');
+  var condLine = wizGrade ? (wizGradeCompany+' '+wizGrade.val+(wizGrade.sub ? ' '+wizGrade.sub : '')) : (isRawSelected ? 'Raw' : '');
+  el.innerHTML =
+    (wizProduct.img ? '<img src="'+wizProduct.img+'">' : '<div class="pmc-noimg"></div>')+
+    '<div><div class="pmc-name">'+wizProduct.name+'</div>'+
+    (wizProduct.sku ? '<div class="pmc-sub">SKU · '+wizProduct.sku+'</div>' : '')+
+    (condLine ? '<div class="pmc-sub">'+condLine+'</div>' : '')+
+    '</div>';
+}
+
+function backFromStep3(){
+  document.getElementById('wizStep3').style.display = 'none';
+  if(currentAddType === 'nonhit' && isRawSelected){
+    document.getElementById('wizStep1').style.display = 'block';
+  } else {
+    document.getElementById('wizStep2').style.display = 'block';
+  }
+}
+
+function confirmWizardAdd(){
+  var price = +document.getElementById('wizPrice').value || 0;
+  var qty = +document.getElementById('wizQty').value || 1;
+  if(!price) return;
+  var condition = wizGrade ? (wizGradeCompany+' '+wizGrade.val+(wizGrade.sub ? ' '+wizGrade.sub : '')) : (isRawSelected ? 'Raw' : '');
+
+  if(currentAddType === 'hit'){
+    hitItems.push({name:wizProduct.name, sku:wizProduct.sku, img:wizProduct.img, condition:condition, price:price});
+  } else {
+    nonHitItems.push({name:wizProduct.name, sku:wizProduct.sku, img:wizProduct.img, condition:condition, isRaw:isRawSelected, price:price, qty:qty});
+  }
+  closePicker('itemOverlay');
+  recalc();
+}
+
+// ============== CONFIRM BOARD / SELLER PAGE ==============
+// ============== BOARD STATUS ==============
+function setBoardStatus(status){
+  boardStatus = status;
+  document.querySelectorAll('.status-tab').forEach(function(t){
+    t.classList.toggle('active', t.dataset.status === status);
+  });
+}
+
+// ============== LIVE HISTORY ==============
+function openAddLiveModal(){
+  document.getElementById('liveDateInput').value = '';
+  document.getElementById('liveDateNote').value = '';
+  openPicker('liveDateOverlay');
+}
+function confirmAddLiveDate(){
+  var date = document.getElementById('liveDateInput').value;
+  var note = document.getElementById('liveDateNote').value.trim();
+  if(!date) return;
+  liveSessions.push({id: Date.now(), date:date, note:note, sales:[]});
+  liveSessions.sort(function(a,b){ return a.date.localeCompare(b.date); });
+  closePicker('liveDateOverlay');
+  renderLiveHistory();
+  maybeAutoSave();
+}
+function removeLiveSession(id){
+  liveSessions = liveSessions.filter(function(s){ return s.id !== id; });
+  renderLiveHistory();
+  maybeAutoSave();
+}
+
+function renderLiveHistory(){
+  document.getElementById('liveCount').textContent = liveSessions.length;
+  document.getElementById('liveFirst').textContent = liveSessions.length ? liveSessions[0].date : '—';
+  document.getElementById('liveLatest').textContent = liveSessions.length ? liveSessions[liveSessions.length-1].date : '—';
+
+  var wrap = document.getElementById('liveSessionList');
+  wrap.innerHTML = '';
+  liveSessions.forEach(function(s, i){
+    var soldCount = s.sales.filter(function(r){ return r.sold; }).length;
+    var soldQty = s.sales.reduce(function(sum,r){ return sum + (r.sold ? (r.qty||0) : 0); }, 0);
+    var div = document.createElement('div');
+    div.className = 'live-session';
+    div.innerHTML =
+      '<div class="live-session-top">'+
+        '<div><div class="live-session-date">'+s.date+(s.note ? ' · '+s.note : '')+'</div>'+
+        '<div class="live-session-meta">'+(s.sales.length ? (soldCount+' <span data-th>รายการขายแล้ว</span><span data-en>items sold</span> · '+soldQty+' <span data-th>ชิ้น</span><span data-en>units</span>') : '<span data-th>ยังไม่ได้บันทึกยอดขาย</span><span data-en>No sales recorded yet</span>')+'</div></div>'+
+        '<div class="live-session-actions">'+
+          '<button class="ls-btn" onclick="openSalesModal('+i+')"><span data-th>บันทึกยอดขาย</span><span data-en>Record sales</span></button>'+
+          '<button class="ls-btn danger" onclick="removeLiveSession('+s.id+')">×</button>'+
+        '</div>'+
+      '</div>';
+    wrap.appendChild(div);
+  });
+}
+
+var currentSalesSessionIdx = null;
+function openSalesModal(idx){
+  currentSalesSessionIdx = idx;
+  var session = liveSessions[idx];
+  document.getElementById('salesModalDate').textContent = session.date + (session.note ? ' · '+session.note : '');
+
+  var entries = getCombinedEntries();
+  var allItems = entries.concat(lastOneItem ? [{label:lastOneItem.name, price:lastOneItem.price, qty:1, nonHit:false, isLastOne:true}] : []);
+
+  var wrap = document.getElementById('salesItemList');
+  wrap.innerHTML = '';
+  allItems.forEach(function(item, i){
+    var existing = session.sales.find(function(r){ return r.label === item.label; });
+    var row = document.createElement('div');
+    row.className = 'sold-row';
+    row.innerHTML =
+      '<input type="checkbox" id="soldChk-'+i+'" '+(existing && existing.sold ? 'checked' : '')+'>'+
+      '<span class="sr-name">'+item.label+(item.nonHit ? ' · non-hit' : '')+(item.isLastOne ? ' · Last One' : '')+'</span>'+
+      '<span style="color:var(--sub);">'+fmt(item.price)+'</span>'+
+      '<span class="sr-qty"><input type="number" id="soldQty-'+i+'" value="'+(existing ? existing.qty : (item.nonHit ? '' : 1))+'" placeholder="qty"></span>';
+    wrap.appendChild(row);
+    row.dataset.label = item.label;
+    row.dataset.nonHit = item.nonHit ? '1' : '0';
+  });
+  openPicker('salesOverlay');
+}
+function confirmSalesRecord(){
+  var session = liveSessions[currentSalesSessionIdx];
+  var rows = document.querySelectorAll('#salesItemList .sold-row');
+  var sales = [];
+  rows.forEach(function(row, i){
+    var chk = document.getElementById('soldChk-'+i);
+    var qtyEl = document.getElementById('soldQty-'+i);
+    var qty = +qtyEl.value || 0;
+    if(chk.checked){
+      sales.push({label: row.dataset.label, sold:true, qty: qty || 1});
+    }
+  });
+  session.sales = sales;
+  closePicker('salesOverlay');
+  renderLiveHistory();
+  maybeAutoSave();
+}
+
+function maybeAutoSave(){
+  if(!currentSellerEmail) return;
+  var boardName = document.getElementById('boardName').value || 'Untitled Board';
+  var existing = savedBoards.find(function(b){ return b.sellerEmail===currentSellerEmail && b.boardName===boardName; });
+  if(!existing) return; // only auto-sync boards that have already been Confirmed once
+  var entry = {
+    boardId: existing.boardId,
+    sellerEmail: currentSellerEmail,
+    boardName: boardName,
+    status: boardStatus,
+    stats: recalc(),
+    entriesSnapshot: JSON.parse(JSON.stringify(getCombinedEntries())),
+    lastOneSnapshot: lastOneItem ? JSON.parse(JSON.stringify(lastOneItem)) : null,
+    liveSessions: JSON.parse(JSON.stringify(liveSessions))
+  };
+  saveBoardToServer(entry);
+}
+
+// ============== BACKEND SYNC (Google Apps Script Web App) ==============
+// Paste your deployed Apps Script Web App URL here (see apps-script-backend.gs)
+var API_URL = 'https://script.google.com/macros/s/AKfycbwUZdHBcNITE9ds3nQsendjXfN7hTd6XFamolIDXhKFZRI4xINBnxbUHSTMr1FF60jb/exec';
+
+function apiConfigured(){ return API_URL && API_URL.indexOf('http') === 0; }
+
+function setSyncStatus(text){
+  document.getElementById('syncStatus').textContent = text;
+}
+
+function fetchAllBoardsFromServer(){
+  if(!apiConfigured()){
+    setSyncStatus('API_URL ยังไม่ได้ตั้งค่า — แก้ตัวแปร API_URL ในไฟล์นี้ก่อน / API_URL not set — edit the API_URL variable in this file first');
+    return;
+  }
+  setSyncStatus('กำลังซิงก์... / Syncing...');
+  fetch(API_URL + '?action=getAll')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(res.ok){
+        savedBoards = res.boards || [];
+        buildSellerSwitcher();
+        setSyncStatus('ซิงก์ล่าสุด: ' + new Date().toLocaleTimeString());
+      } else {
+        setSyncStatus('Sync error: ' + res.error);
+      }
+    })
+    .catch(function(err){ setSyncStatus('Sync failed: ' + err.message); });
+}
+
+function saveBoardToServer(entry){
+  if(!apiConfigured()){
+    setSyncStatus('API_URL ยังไม่ได้ตั้งค่า — บันทึกไว้ในเครื่องนี้ชั่วคราวเท่านั้น / API_URL not set — saved locally only for now');
+    var existingIdx = savedBoards.findIndex(function(b){ return b.sellerEmail===entry.sellerEmail && b.boardName===entry.boardName; });
+    if(existingIdx>=0) savedBoards[existingIdx] = entry; else savedBoards.push(entry);
+    buildSellerSwitcher();
+    return Promise.resolve(entry);
+  }
+  setSyncStatus('กำลังบันทึก... / Saving...');
+  return fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action:'saveBoard', board: entry })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(res){
+    if(res.ok){
+      entry.boardId = res.boardId;
+      setSyncStatus('บันทึกแล้ว: ' + new Date().toLocaleTimeString());
+      fetchAllBoardsFromServer();
+    } else {
+      setSyncStatus('Save error: ' + res.error);
+    }
+    return entry;
+  })
+  .catch(function(err){ setSyncStatus('Save failed: ' + err.message); return entry; });
+}
+
+// ============== CONFIRM BOARD / SELLER PREVIEW ==============
+function confirmBoard(){
+  var stats = recalc();
+  var boardName = document.getElementById('boardName').value || 'Untitled Board';
+  if(!currentSellerEmail){ alert('กรุณาเลือก seller ก่อนยืนยัน / Please select a seller before confirming'); return; }
+
+  var existing = savedBoards.find(function(b){ return b.sellerEmail===currentSellerEmail && b.boardName===boardName; });
+  var entry = {
+    boardId: existing ? existing.boardId : null,
+    sellerEmail: currentSellerEmail,
+    boardName: boardName,
+    status: boardStatus,
+    stats: stats,
+    entriesSnapshot: JSON.parse(JSON.stringify(getCombinedEntries())),
+    lastOneSnapshot: lastOneItem ? JSON.parse(JSON.stringify(lastOneItem)) : null,
+    liveSessions: JSON.parse(JSON.stringify(liveSessions))
+  };
+
+  saveBoardToServer(entry).then(function(saved){
+    showSellerPage(saved);
+  });
+}
+
+function buildSellerSwitcher(){
+  var wrap = document.getElementById('sellerSwitcher');
+  wrap.innerHTML = '';
+  if(savedBoards.length===0) return;
+  savedBoards.forEach(function(b){
+    var p = document.createElement('div');
+    p.className = 'seller-pill';
+    p.onclick = function(){ showSellerPage(b); };
+    p.innerHTML = '<span class="dot"></span>'+b.sellerEmail+' · '+b.boardName+' <span class="status-badge '+b.status.toLowerCase()+'" style="margin-left:4px;">'+b.status+'</span>';
+    wrap.appendChild(p);
+  });
+}
+
+function showSellerPage(entry){
+  document.getElementById('formView').style.display = 'none';
+  document.getElementById('sellerPageView').style.display = 'block';
+
+  document.getElementById('spSellerEmail').textContent = entry.sellerEmail;
+  document.getElementById('spBoardName').innerHTML = entry.boardName + ' <span class="status-badge '+entry.status.toLowerCase()+'">'+entry.status+'</span>';
+  document.getElementById('spPricePerSpot').textContent = fmt(entry.stats.pricePerSpot);
+  document.getElementById('spTotalSlots').textContent = entry.stats.totalSlots;
+  document.getElementById('spMaxMoney').textContent = fmt(entry.stats.maxMoney);
+  document.getElementById('spHitCount').textContent = entry.stats.hitCount;
+  document.getElementById('spNonHitCount').textContent = entry.stats.nonHitCount;
+
+  var list = document.getElementById('spItemList');
+  list.innerHTML = '';
+  var slotNo = 1;
+  entry.entriesSnapshot.forEach(function(e){
+    var startSlot = slotNo; slotNo += e.qty; var endSlot = slotNo - 1;
+    var rangeLabel = e.qty === 1 ? ('S-'+String(startSlot).padStart(3,'0')) : ('S-'+String(startSlot).padStart(3,'0')+' – S-'+String(endSlot).padStart(3,'0'));
+    var item = document.createElement('div');
+    item.className = 'item';
+    item.innerHTML =
+      '<div class="item-top">'+
+        (e.img ? '<img src="'+e.img+'">' : '')+
+        '<span class="item-badge">'+rangeLabel+'</span>'+
+        '<div class="item-info"><div class="item-name">'+e.label+'</div><div class="item-sub">'+(e.condition||'')+(e.nonHit ? ' · non-hit' : '')+'</div></div>'+
+        '<div class="item-price">'+fmt(e.price)+' × '+e.qty+'</div>'+
+      '</div>';
+    list.appendChild(item);
+  });
+  if(entry.lastOneSnapshot){
+    var lo = document.createElement('div');
+    lo.className = 'item';
+    lo.innerHTML = '<div class="item-top"><span class="item-badge">Last One</span><div class="item-info"><div class="item-name">'+entry.lastOneSnapshot.name+'</div></div><div class="item-price">'+fmt(entry.lastOneSnapshot.price)+'</div></div>';
+    list.appendChild(lo);
+  }
+}
+
+function showForm(){
+  document.getElementById('sellerPageView').style.display = 'none';
+  document.getElementById('formView').style.display = 'block';
+}
+
+// ============== LANGUAGE ==============
+function setLang(lang){
+  document.documentElement.setAttribute('data-lang', lang);
+  document.querySelectorAll('.toggle-pill .opt.th, .toggle-pill .opt.en').forEach(function(o){ o.classList.remove('active'); });
+  document.querySelectorAll('.toggle-pill .opt.'+lang).forEach(function(o){ o.classList.add('active'); });
+}
+
+// ============== INIT ==============
+buildSellerOptions();
+renderLiveHistory();
+recalc();
+fetchAllBoardsFromServer();
+</script>
+</body>
+</html>
