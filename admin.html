@@ -249,7 +249,7 @@
 
     <div class="field">
       <label><span data-th>ชื่อบอร์ด</span><span data-en>Board name</span></label>
-      <input type="text" id="boardName" placeholder="เช่น One Piece OP-08 — Blast Pop">
+      <input type="text" id="boardName" placeholder="">
     </div>
 
     <div class="field">
@@ -257,7 +257,7 @@
       <div class="color-field" onclick="openPicker('colorOverlay')">
         <span class="color-field-inner">
           <span id="colorDot" class="color-dot" style="display:none;"></span>
-          <span id="colorFieldText" class="placeholder"><span data-th>เลือกสี</span><span data-en>Select color</span></span>
+          <span id="colorFieldText" class="placeholder"></span>
         </span>
         <span class="chev">⌄</span>
       </div>
@@ -266,11 +266,11 @@
     <div class="row2">
       <div class="field">
         <div class="row-label"><label><span data-th>จำนวนช่องทั้งหมด</span><span data-en>Total spots</span></label><span class="hint"><span data-th>สูงสุด 200</span><span data-en>Max 200</span></span></div>
-        <input type="number" id="totalSlots" placeholder="ตัวเลข" oninput="recalc()">
+        <input type="number" id="totalSlots" placeholder="" oninput="recalc()">
       </div>
       <div class="field">
         <label><span data-th>ราคาต่อช่อง</span><span data-en>Price per spot</span></label>
-        <div class="prefix-input"><span>฿</span><input type="number" id="pricePerSpot" placeholder="ใส่ราคาขั้นต่ำ" oninput="recalc()"></div>
+        <div class="prefix-input"><span>฿</span><input type="number" id="pricePerSpot" placeholder="" oninput="recalc()"></div>
       </div>
     </div>
 
@@ -383,7 +383,7 @@
     <div class="seller-card-box">
       <span class="icon">✉️</span>
       <div>
-        <div class="email placeholder" id="sellerEmailText"><span data-th>ยังไม่ได้เลือก seller</span><span data-en>No seller selected</span></div>
+        <div class="email placeholder" id="sellerEmailText"></div>
         <div class="sub"><span data-th>Seller ปัจจุบันของบอร์ดนี้</span><span data-en>Current seller for this board</span></div>
       </div>
     </div>
@@ -449,7 +449,7 @@
     <div class="pick-modal-head"><h3><span data-th>เลือก Seller</span><span data-en>Select seller</span></h3><span class="close-x" onclick="closePicker('sellerOverlay')">✕</span></div>
     <div id="sellerOptionList"></div>
     <div class="pick-new-row">
-      <input type="text" id="newSellerEmail" placeholder="new-seller@email.com">
+      <input type="text" id="newSellerEmail" placeholder="">
       <button onclick="addNewSeller()"><span data-th>เพิ่ม</span><span data-en>Add</span></button>
     </div>
   </div>
@@ -459,8 +459,8 @@
 <div class="overlay" id="lastOneOverlay" onclick="if(event.target===this) closePicker('lastOneOverlay')">
   <div class="pick-modal">
     <div class="pick-modal-head"><h3><span data-th>เพิ่มรางวัล Last One</span><span data-en>Add Last One prize</span></h3><span class="close-x" onclick="closePicker('lastOneOverlay')">✕</span></div>
-    <div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Item name</span></label><input type="text" id="loName" placeholder="เช่น Playmat พิเศษ"></div>
-    <div class="field"><label><span data-th>ราคา</span><span data-en>Price</span></label><div class="prefix-input"><span>฿</span><input type="number" id="loPrice" placeholder="0"></div></div>
+    <div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Item name</span></label><input type="text" id="loName" placeholder=""></div>
+    <div class="field"><label><span data-th>ราคา</span><span data-en>Price</span></label><div class="prefix-input"><span>฿</span><input type="number" id="loPrice" placeholder=""></div></div>
     <div class="btn-row" style="margin-top:8px;">
       <div class="btn-cancel" onclick="closePicker('lastOneOverlay')"><span data-th>ยกเลิก</span><span data-en>Cancel</span></div>
       <div class="btn-confirm" onclick="confirmLastOne()"><span data-th>เพิ่ม</span><span data-en>Add</span></div>
@@ -484,7 +484,7 @@
         <div class="field">
           <label><span data-th>ลิงก์สินค้า SASOM</span><span data-en>SASOM product link</span></label>
           <div class="link-fetch-row">
-            <input type="text" id="sasomLink" placeholder="https://sasom.co.th/th/collectibles/...">
+            <input type="text" id="sasomLink" placeholder="">
             <button onclick="fetchFromLink()"><span data-th>ดึงข้อมูล</span><span data-en>Fetch</span></button>
           </div>
         </div>
@@ -492,8 +492,8 @@
       </div>
 
       <div id="manualFields" style="display:none;">
-        <div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Item name</span></label><input type="text" id="manualName" placeholder="เช่น Pokemon Pikachu VMAX ..."></div>
-        <div class="field"><label><span data-th>รูปภาพ (ลิงก์)</span><span data-en>Image (URL)</span></label><input type="text" id="manualImg" placeholder="https://..."></div>
+        <div class="field"><label><span data-th>ชื่อสินค้า</span><span data-en>Item name</span></label><input type="text" id="manualName" placeholder=""></div>
+        <div class="field"><label><span data-th>รูปภาพ (ลิงก์)</span><span data-en>Image (URL)</span></label><input type="text" id="manualImg" placeholder=""></div>
         <div class="field"><label>SKU <span class="hint">(<span data-th>ถ้ามี</span><span data-en>optional</span>)</span></label><input type="text" id="manualSku" placeholder=""></div>
       </div>
 
@@ -533,7 +533,7 @@
     <div id="wizStep3" style="display:none;">
       <div class="product-mini-card" id="pmcBox2"></div>
       <div class="row2">
-        <div class="field"><label><span data-th>ราคา</span><span data-en>Price</span></label><div class="prefix-input"><span>฿</span><input type="number" id="wizPrice" placeholder="0"></div></div>
+        <div class="field"><label><span data-th>ราคา</span><span data-en>Price</span></label><div class="prefix-input"><span>฿</span><input type="number" id="wizPrice" placeholder=""></div></div>
         <div class="field" id="wizQtyField"><label><span data-th>จำนวน</span><span data-en>Qty</span></label><input type="number" id="wizQty" value="1"></div>
       </div>
       <div class="btn-row">
@@ -549,7 +549,7 @@
   <div class="pick-modal">
     <div class="pick-modal-head"><h3><span data-th>เพิ่มวันไลฟ์</span><span data-en>Add live date</span></h3><span class="close-x" onclick="closePicker('liveDateOverlay')">✕</span></div>
     <div class="field"><label><span data-th>วันที่ไลฟ์</span><span data-en>Live date</span></label><input type="date" id="liveDateInput"></div>
-    <div class="field"><label><span data-th>โน้ต (ถ้ามี)</span><span data-en>Note (optional)</span></label><input type="text" id="liveDateNote" placeholder="เช่น ไลฟ์รอบเช้า / TikTok"></div>
+    <div class="field"><label><span data-th>โน้ต (ถ้ามี)</span><span data-en>Note (optional)</span></label><input type="text" id="liveDateNote" placeholder=""></div>
     <div class="btn-row" style="margin-top:8px;">
       <div class="btn-cancel" onclick="closePicker('liveDateOverlay')"><span data-th>ยกเลิก</span><span data-en>Cancel</span></div>
       <div class="btn-confirm" onclick="confirmAddLiveDate()"><span data-th>เพิ่ม</span><span data-en>Add</span></div>
@@ -1044,7 +1044,7 @@ function openSalesModal(idx){
       '<input type="checkbox" id="soldChk-'+i+'" '+(existing && existing.sold ? 'checked' : '')+'>'+
       '<span class="sr-name">'+item.label+(item.nonHit ? ' · non-hit' : '')+(item.isLastOne ? ' · Last One' : '')+'</span>'+
       '<span style="color:var(--sub);">'+fmt(item.price)+'</span>'+
-      '<span class="sr-qty"><input type="number" id="soldQty-'+i+'" value="'+(existing ? existing.qty : (item.nonHit ? '' : 1))+'" placeholder="qty"></span>';
+      '<span class="sr-qty"><input type="number" id="soldQty-'+i+'" value="'+(existing ? existing.qty : (item.nonHit ? '' : 1))+'" placeholder=""></span>';
     wrap.appendChild(row);
     row.dataset.label = item.label;
     row.dataset.nonHit = item.nonHit ? '1' : '0';
