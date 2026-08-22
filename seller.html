@@ -85,9 +85,13 @@
   .live-session-date{font-weight:600; font-size:14px;}
   .live-session-meta{font-size:12px; color:var(--sub); margin-top:2px;}
   .live-session-top-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
-  .live-pay-row{display:flex; gap:16px; margin-top:10px; padding-top:10px; border-top:1px solid var(--gray-line);}
-  .lp-stat{font-size:11px; color:var(--sub);}
-  .lp-stat b{display:block; font-size:13.5px; color:var(--dark); font-weight:600; margin-top:1px;}
+  .live-pay-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--gray-line);}
+  .lp-box{background:var(--gray-bg); border-radius:10px; padding:10px 12px; min-width:0;}
+  .lp-box.accent{background:var(--dark);}
+  .lp-label{font-size:11px; color:var(--sub); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .lp-box.accent .lp-label{color:#C9C9C9;}
+  .lp-value{font-size:14px; font-weight:600; color:var(--dark); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .lp-box.accent .lp-value{color:var(--accent);}
   .sold-item-row{display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0; border-top:1px solid var(--gray-line);}
   .sold-item-row:first-child{border-top:none;}
 </style>
@@ -136,6 +140,12 @@ var myBoards = [];
 var currentBoardIdx = 0;
 
 function fmt(n){ return '฿' + Math.round(n).toLocaleString('en-US'); }
+function formatDateDMY(iso){
+  if(!iso) return '—';
+  var parts = iso.split('-');
+  if(parts.length !== 3) return iso;
+  return parts[2] + '/' + parts[1] + '/' + parts[0];
+}
 function apiConfigured(){ return API_URL && API_URL.indexOf('http') === 0; }
 
 function tryEnter(){
@@ -269,7 +279,7 @@ function renderBoard(){
       }
 
       html += '<div class="live-session"><div class="live-session-top-row">'+
-        '<div class="live-session-date">'+s.date+(s.note ? ' · '+s.note : '')+'</div>'+
+        '<div class="live-session-date">'+formatDateDMY(s.date)+(s.note ? ' · '+s.note : '')+'</div>'+
         '<span class="status-badge '+status.toLowerCase()+'">'+status+'</span>'+
       '</div>';
       if(!soldItems.length){
@@ -279,10 +289,10 @@ function renderBoard(){
           var slotsTxt = r.slots ? ' (' + r.slots.map(function(n){ return 'S-'+String(n).padStart(3,'0'); }).join(', ') + ')' : '';
           html += '<div class="sold-item-row"><span>'+r.label+slotsTxt+'</span><span>× '+r.qty+'</span></div>';
         });
-        html += '<div class="live-pay-row">'+
-          '<div class="lp-stat"><span data-th>ยอดขาย</span><span data-en>Sale value</span><b>'+fmt(saleValue)+'</b></div>'+
-          '<div class="lp-stat"><span data-th>หัก '+feePct+'%</span><span data-en>Fee '+feePct+'%</span><b>-'+fmt(feeAmount)+'</b></div>'+
-          '<div class="lp-stat"><span data-th>ได้รับ</span><span data-en>You receive</span><b>'+fmt(payout)+'</b></div>'+
+        html += '<div class="live-pay-grid">'+
+          '<div class="lp-box"><div class="lp-label"><span data-th>ยอดขาย</span><span data-en>Sale value</span></div><div class="lp-value">'+fmt(saleValue)+'</div></div>'+
+          '<div class="lp-box"><div class="lp-label"><span data-th>หัก '+feePct+'%</span><span data-en>Fee '+feePct+'%</span></div><div class="lp-value">-'+fmt(feeAmount)+'</div></div>'+
+          '<div class="lp-box accent"><div class="lp-label"><span data-th>ได้รับ</span><span data-en>You receive</span></div><div class="lp-value">'+fmt(payout)+'</div></div>'+
         '</div>';
       }
       html += '</div>';
