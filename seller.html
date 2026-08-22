@@ -64,9 +64,10 @@
 
   .item-list{display:flex; flex-direction:column; gap:10px;}
   .item{background:#fff; border:1px solid var(--gray-line); border-radius:14px; padding:12px 14px;}
-  .item-top{display:flex; align-items:center; gap:10px;}
+  .item-top{display:flex; align-items:flex-start; gap:10px;}
   .item-top img{width:34px; height:34px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--gray-bg);}
   .item-badge{background:var(--dark); color:#fff; font-size:11px; font-weight:500; padding:3px 9px; border-radius:7px; flex-shrink:0;}
+  .item-badges{display:flex; flex-wrap:wrap; gap:4px; flex-shrink:0; max-width:160px;}
   .item-info{flex:1; min-width:0;}
   .item-name{font-size:13.5px; font-weight:600;}
   .item-sub{font-size:11.5px; color:var(--sub);}
@@ -260,6 +261,13 @@ function renderBoard(){
   var pricePerSpot = b.stats.pricePerSpot;
   var feePct = (b.sellerFeePct != null) ? b.sellerFeePct : 5;
 
+  var entryMap = {}, slotMap = {}, sNo = 1;
+  (b.entriesSnapshot||[]).forEach(function(e){
+    entryMap[e.label] = e;
+    var start = sNo; sNo += e.qty; var end = sNo - 1;
+    slotMap[e.label] = {start:start, end:end};
+  });
+
   var totalSpotsSold = 0, totalSaleValue = 0, totalFee = 0, totalPayout = 0;
 
   html += '<div class="card"><h2><span data-th>ประวัติการไลฟ์ & การจ่ายเงิน</span><span data-en>Live History & Payment</span> ('+sessions.length+')</h2>';
@@ -285,10 +293,19 @@ function renderBoard(){
       if(!soldItems.length){
         html += '<div class="live-session-meta"><span data-th>ยังไม่ได้บันทึกยอดขาย</span><span data-en>No sales recorded</span></div>';
       } else {
+        html += '<div class="item-list" style="margin-top:10px;">';
         soldItems.forEach(function(r){
-          var slotsTxt = r.slots ? ' (' + r.slots.map(function(n){ return 'S-'+String(n).padStart(3,'0'); }).join(', ') + ')' : '';
-          html += '<div class="sold-item-row"><span>'+r.label+slotsTxt+'</span><span>× '+r.qty+'</span></div>';
+          var entry = entryMap[r.label] || {};
+          var badgeNums = r.slots ? r.slots : (slotMap[r.label] ? [slotMap[r.label].start] : []);
+          var badgesHtml = badgeNums.map(function(n){ return '<span class="item-badge">S-'+String(n).padStart(3,'0')+'</span>'; }).join('');
+          html += '<div class="item"><div class="item-top">'+
+            (entry.img ? '<img src="'+entry.img+'">' : '')+
+            '<div class="item-badges">'+badgesHtml+'</div>'+
+            '<div class="item-info"><div class="item-name">'+r.label+'</div><div class="item-sub">'+(entry.condition||'')+'</div></div>'+
+            '<div class="item-price">'+fmt(entry.price||0)+' × '+r.qty+'</div>'+
+          '</div></div>';
         });
+        html += '</div>';
         html += '<div class="live-pay-grid">'+
           '<div class="lp-box"><div class="lp-label"><span data-th>ยอดขาย</span><span data-en>Sale value</span></div><div class="lp-value">'+fmt(saleValue)+'</div></div>'+
           '<div class="lp-box"><div class="lp-label"><span data-th>หัก '+feePct+'%</span><span data-en>Fee '+feePct+'%</span></div><div class="lp-value">-'+fmt(feeAmount)+'</div></div>'+
