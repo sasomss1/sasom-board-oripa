@@ -114,6 +114,7 @@
   .mini-item .mi-price{font-weight:500; white-space:nowrap;}
   .mini-item .mi-remove{color:#B5B5B5; cursor:pointer; font-size:15px; padding:2px 4px; flex-shrink:0;}
   .mini-item .mi-slot{background:var(--dark); color:#fff; font-size:11px; font-weight:600; padding:5px 9px; border-radius:7px; flex-shrink:0; white-space:nowrap;}
+  .slot-badge{display:inline-block; background:var(--dark); color:#fff; font-size:11px; font-weight:600; padding:4px 9px; border-radius:7px; white-space:nowrap; margin-top:3px;}
 
   .section-row{border:1px solid var(--gray-line); border-radius:16px; padding:20px 24px; display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
   .section-title{font-weight:500; font-size:16px; display:flex; align-items:center; gap:8px;}
@@ -189,7 +190,9 @@
 
   /* seller page view */
   #sellerPageView{display:none;}
-  .back-link{font-size:13.5px; font-weight:500; color:var(--sub); cursor:pointer; display:inline-flex; align-items:center; gap:6px; margin-bottom:18px;}
+  .back-link{font-size:13.5px; font-weight:500; color:var(--sub); cursor:pointer; display:inline-flex; align-items:center; gap:6px;}
+  .sp-nav-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;}
+  .sp-nav-actions{display:flex; gap:10px;}
   .seller-page-head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;}
   .seller-page-head .who{font-size:13px; color:var(--sub);}
   .seller-page-head .who b{color:var(--dark);}
@@ -220,6 +223,13 @@
   .live-session-date{font-weight:600; font-size:14px;}
   .live-session-meta{font-size:12px; color:var(--sub); margin-top:2px;}
   .live-session-actions{display:flex; gap:8px;}
+  .live-pay-row{display:flex; align-items:center; gap:14px; margin-top:12px; padding-top:12px; border-top:1px solid var(--gray-line);}
+  .lp-stat{font-size:11px; color:var(--sub);}
+  .lp-stat b{display:block; font-size:14px; color:var(--dark); font-weight:600; margin-top:1px;}
+  .pay-status{margin-left:auto; border:1px solid var(--gray-line); border-radius:8px; padding:7px 10px; font-size:12px; font-weight:600; background:#F5F5F5; color:var(--sub); appearance:auto;}
+  .pay-status-pending{background:#FFF6DC; color:#6B5900; border-color:#F0E0A8;}
+  .pay-status-done{background:#EAF7EA; color:#2E7D32; border-color:#B7E3B7;}
+  .pay-status-cancel{background:#FBEAEA; color:#C0392B; border-color:#E9B9B9;}
   .ls-btn{border:1px solid var(--gray-line); background:#fff; border-radius:8px; padding:7px 12px; font-size:12.5px; font-weight:500; cursor:pointer;}
   .ls-btn.danger{color:#C0392B;}
   .sold-row{display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-top:1px solid var(--gray-line); font-size:13px;}
@@ -345,15 +355,27 @@
   <div class="card">
     <div class="card-head-row">
       <div>
-        <h2><span data-th>ประวัติการไลฟ์</span><span data-en>Live History</span></h2>
+        <h2><span data-th>ประวัติการไลฟ์ & การจ่าย Seller</span><span data-en>Live History & Seller Payment</span></h2>
       </div>
       <button class="add-btn" onclick="openAddLiveModal()">+ <span data-th>เพิ่มวันไลฟ์</span><span data-en>Add live date</span></button>
     </div>
 
-    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);">
+    <div class="field">
+      <label><span data-th>หัก Seller (%)</span><span data-en>Seller fee (%)</span></label>
+      <div class="suffix-input"><input type="number" id="sellerFeePct" value="5" oninput="sellerFeePct=+this.value||0; renderLiveHistory(); maybeAutoSave();"><span>%</span></div>
+    </div>
+
+    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr); margin-top:16px;">
       <div class="stat-card"><div class="l"><span data-th>ไลฟ์ไปแล้ว (ครั้ง)</span><span data-en>Total live sessions</span></div><div class="v" id="liveCount">0</div></div>
       <div class="stat-card"><div class="l"><span data-th>ไลฟ์ครั้งแรก</span><span data-en>First live</span></div><div class="v" id="liveFirst">—</div></div>
       <div class="stat-card"><div class="l"><span data-th>ไลฟ์ล่าสุด</span><span data-en>Latest live</span></div><div class="v" id="liveLatest">—</div></div>
+    </div>
+
+    <div class="stat-grid" style="margin-top:10px;">
+      <div class="stat-card"><div class="l"><span data-th>ช่องขายไปแล้วรวม</span><span data-en>Total spots sold</span></div><div class="v" id="paySpotsSold">0</div></div>
+      <div class="stat-card"><div class="l"><span data-th>ยอดขายรวม</span><span data-en>Total sale value</span></div><div class="v" id="paySaleValue">฿0</div></div>
+      <div class="stat-card"><div class="l"><span data-th>หักรวม</span><span data-en>Total fee deducted</span></div><div class="v" id="payFeeTotal">฿0</div></div>
+      <div class="stat-card accent"><div class="l"><span data-th>ยอดจ่าย Seller รวม</span><span data-en>Total payable to seller</span></div><div class="v" id="payTotal">฿0</div></div>
     </div>
 
     <div id="liveSessionList" style="margin-top:16px;"></div>
@@ -425,8 +447,13 @@
     </div>
   </div>
 
-  <div class="back-link" id="spBackLink" onclick="showForm()">← <span data-th>กลับไปแก้ไข / สร้างบอร์ดอื่น</span><span data-en>Back to edit / create another board</span></div>
-  <button class="change-btn" onclick="window.open('admin.html?view=boards','_blank')" style="margin-bottom:18px;">📋 <span data-th>บอร์ดทั้งหมด</span><span data-en>All Boards</span></button>
+  <div class="sp-nav-row">
+    <div class="back-link" id="spBackLink" onclick="location.href='admin.html?view=boards'">← <span data-th>กลับ</span><span data-en>Back</span></div>
+    <div class="sp-nav-actions">
+      <button class="change-btn" onclick="editCurrentBoard()">✎ <span data-th>แก้ไข</span><span data-en>Edit</span></button>
+      <button class="add-btn" onclick="location.href='admin.html'">+ <span data-th>สร้างบอร์ดใหม่</span><span data-en>Create new board</span></button>
+    </div>
+  </div>
 
   <div class="seller-page-head">
     <div>
@@ -623,7 +650,8 @@ var sellerEmails = [
 var currentSellerEmail = null;
 var savedBoards = []; // {sellerEmail, boardName, stats, entriesSnapshot, lastOneSnapshot, status, liveSessions}
 var boardStatus = 'PREPARE'; // 'PREPARE' | 'ON' | 'OFF'
-var liveSessions = []; // {id, date, note, sales:[{label, sold, qty}]}
+var sellerFeePct = 5; // platform fee % deducted from seller payout, editable per board
+var liveSessions = []; // {id, date, note, sales:[{label, sold, qty}], paymentStatus:'PENDING'|'DONE'|'CANCEL'}
 
 var GRADE_SETS = {
   PSA: [10,9,8,7,6,5,4,3,2,1].map(function(v){ return {val:v, sub:''}; }),
@@ -793,20 +821,36 @@ function recalc(){
   document.getElementById('hitCount').textContent = hitCount;
   document.getElementById('nonHitCount').textContent = nonHitCount;
 
+  renderLiveHistory();
+
   return {totalSlots:totalSlots, pricePerSpot:pricePerSpot, maxMoney:maxMoney, totalCost:totalCost, costPct:costPct, profit:profit, profitPct:profitPct, avgPrize:avgPrize, breakEven:breakEven, hitCount:hitCount, nonHitCount:nonHitCount};
 }
 
 
 
 // ============== COLOR PICKER ==============
+var boardColor = null; // {hex, th, en} — persisted with the board so it survives edit/reload
+
 function openPicker(id){ document.getElementById(id).classList.add('open'); }
 function closePicker(id){ document.getElementById(id).classList.remove('open'); }
-function pickColor(hex, nameTh, nameEn){
+
+function setColorField(hex, nameTh, nameEn){
   var dot = document.getElementById('colorDot');
-  dot.style.background = hex; dot.style.display = 'inline-block';
   var textEl = document.getElementById('colorFieldText');
+  if(!hex){
+    dot.style.display = 'none';
+    textEl.classList.add('placeholder');
+    textEl.textContent = '';
+    return;
+  }
+  dot.style.background = hex; dot.style.display = 'inline-block';
   textEl.classList.remove('placeholder');
   textEl.innerHTML = '<span data-th>'+nameTh+'</span><span data-en>'+nameEn+'</span>';
+}
+
+function pickColor(hex, nameTh, nameEn){
+  boardColor = {hex:hex, th:nameTh, en:nameEn};
+  setColorField(hex, nameTh, nameEn);
   closePicker('colorOverlay');
 }
 
@@ -1068,7 +1112,7 @@ function confirmAddLiveDate(){
   var date = document.getElementById('liveDateInput').value;
   var note = document.getElementById('liveDateNote').value.trim();
   if(!date) return;
-  liveSessions.push({id: Date.now(), date:date, note:note, sales:[]});
+  liveSessions.push({id: Date.now(), date:date, note:note, sales:[], paymentStatus:'PENDING'});
   liveSessions.sort(function(a,b){ return a.date.localeCompare(b.date); });
   closePicker('liveDateOverlay');
   renderLiveHistory();
@@ -1085,24 +1129,63 @@ function renderLiveHistory(){
   document.getElementById('liveFirst').textContent = liveSessions.length ? liveSessions[0].date : '—';
   document.getElementById('liveLatest').textContent = liveSessions.length ? liveSessions[liveSessions.length-1].date : '—';
 
+  var pricePerSpot = +document.getElementById('pricePerSpot').value || 0;
+  var feePct = sellerFeePct || 0;
+
+  var totalSpotsSold = 0, totalSaleValue = 0, totalFee = 0, totalPayout = 0;
+
   var wrap = document.getElementById('liveSessionList');
   wrap.innerHTML = '';
   liveSessions.forEach(function(s, i){
     var soldCount = s.sales.filter(function(r){ return r.sold; }).length;
     var soldQty = s.sales.reduce(function(sum,r){ return sum + (r.sold ? (r.qty||0) : 0); }, 0);
+
+    var saleValue = soldQty * pricePerSpot;
+    var feeAmount = saleValue * (feePct/100);
+    var payout = saleValue - feeAmount;
+
+    if(!s.paymentStatus) s.paymentStatus = 'PENDING';
+    if(s.paymentStatus !== 'CANCEL'){
+      totalSpotsSold += soldQty;
+      totalSaleValue += saleValue;
+      totalFee += feeAmount;
+      totalPayout += payout;
+    }
+
     var div = document.createElement('div');
     div.className = 'live-session';
     div.innerHTML =
       '<div class="live-session-top">'+
         '<div><div class="live-session-date">'+s.date+(s.note ? ' · '+s.note : '')+'</div>'+
-        '<div class="live-session-meta">'+(s.sales.length ? (soldCount+' <span data-th>รายการขายแล้ว</span><span data-en>items sold</span> · '+soldQty+' <span data-th>ชิ้น</span><span data-en>units</span>') : '<span data-th>ยังไม่ได้บันทึกยอดขาย</span><span data-en>No sales recorded yet</span>')+'</div></div>'+
+        '<div class="live-session-meta">'+(s.sales.length ? (soldCount+' <span data-th>รายการขายแล้ว</span><span data-en>items sold</span> · '+soldQty+' <span data-th>ช่อง</span><span data-en>spots</span>') : '<span data-th>ยังไม่ได้บันทึกยอดขาย</span><span data-en>No sales recorded yet</span>')+'</div></div>'+
         '<div class="live-session-actions">'+
           '<button class="ls-btn" onclick="openSalesModal('+i+')"><span data-th>บันทึกยอดขาย</span><span data-en>Record sales</span></button>'+
           '<button class="ls-btn danger" onclick="removeLiveSession('+s.id+')">×</button>'+
         '</div>'+
+      '</div>'+
+      '<div class="live-pay-row">'+
+        '<div class="lp-stat"><span data-th>ยอดขาย</span><span data-en>Sale value</span><b>'+fmt(saleValue)+'</b></div>'+
+        '<div class="lp-stat"><span data-th>หัก '+feePct+'%</span><span data-en>Fee '+feePct+'%</span><b>-'+fmt(feeAmount)+'</b></div>'+
+        '<div class="lp-stat"><span data-th>จ่าย Seller</span><span data-en>Payout</span><b>'+fmt(payout)+'</b></div>'+
+        '<select class="pay-status pay-status-'+s.paymentStatus.toLowerCase()+'" onchange="setPaymentStatus('+i+',this.value)">'+
+          '<option value="PENDING" '+(s.paymentStatus==='PENDING'?'selected':'')+'>PENDING</option>'+
+          '<option value="DONE" '+(s.paymentStatus==='DONE'?'selected':'')+'>DONE</option>'+
+          '<option value="CANCEL" '+(s.paymentStatus==='CANCEL'?'selected':'')+'>CANCEL</option>'+
+        '</select>'+
       '</div>';
     wrap.appendChild(div);
   });
+
+  document.getElementById('paySpotsSold').textContent = totalSpotsSold;
+  document.getElementById('paySaleValue').textContent = fmt(totalSaleValue);
+  document.getElementById('payFeeTotal').textContent = fmt(totalFee);
+  document.getElementById('payTotal').textContent = fmt(totalPayout);
+}
+
+function setPaymentStatus(idx, status){
+  liveSessions[idx].paymentStatus = status;
+  renderLiveHistory();
+  maybeAutoSave();
 }
 
 var currentSalesSessionIdx = null;
@@ -1139,7 +1222,7 @@ function openSalesModal(idx){
         '<div class="sr-info">'+
           '<div class="sr-name">'+item.label+(item.nonHit?' · non-hit':'')+'</div>'+
           (subLine ? '<div class="sr-sub">'+subLine+'</div>' : '')+
-          '<div class="sr-sub">S-'+String(startSlot).padStart(3,'0')+'</div>'+
+          '<span class="slot-badge">'+padSlot(startSlot)+'</span>'+
         '</div>'+
         '<div class="sr-price">'+fmt(item.price)+'</div>';
     } else {
@@ -1230,6 +1313,8 @@ function maybeAutoSave(){
     sellerEmail: currentSellerEmail,
     boardName: boardName,
     status: boardStatus,
+    color: boardColor,
+    sellerFeePct: sellerFeePct,
     stats: recalc(),
     entriesSnapshot: JSON.parse(JSON.stringify(getCombinedEntries())),
     lastOneSnapshot: lastOneItem ? JSON.parse(JSON.stringify(lastOneItem)) : null,
@@ -1307,6 +1392,8 @@ function confirmBoard(){
     sellerEmail: currentSellerEmail,
     boardName: boardName,
     status: boardStatus,
+    color: boardColor,
+    sellerFeePct: sellerFeePct,
     stats: stats,
     entriesSnapshot: JSON.parse(JSON.stringify(getCombinedEntries())),
     lastOneSnapshot: lastOneItem ? JSON.parse(JSON.stringify(lastOneItem)) : null,
@@ -1331,7 +1418,10 @@ function buildSellerSwitcher(){
   });
 }
 
+var currentPreviewEntry = null;
+
 function showSellerPage(entry){
+  currentPreviewEntry = entry;
   document.getElementById('formView').style.display = 'none';
   document.getElementById('sellerPageView').style.display = 'block';
 
@@ -1372,6 +1462,10 @@ function showForm(){
   document.getElementById('sellerPageView').style.display = 'none';
   document.getElementById('boardsListView').style.display = 'none';
   document.getElementById('formView').style.display = 'block';
+}
+
+function editCurrentBoard(){
+  if(currentPreviewEntry) loadBoardIntoForm(currentPreviewEntry);
 }
 
 // ============== ALL BOARDS LIST (manage / edit / delete) ==============
@@ -1427,14 +1521,13 @@ function deleteBoardConfirm(boardId){
 
 function resetForm(){
   document.getElementById('boardName').value = '';
-  var colorDot = document.getElementById('colorDot');
-  colorDot.style.display = 'none';
-  var colorText = document.getElementById('colorFieldText');
-  colorText.classList.add('placeholder');
-  colorText.textContent = '';
+  boardColor = null;
+  setColorField(null);
 
   document.getElementById('pricePerSpot').value = '';
   document.getElementById('payoutRate').value = 70;
+  document.getElementById('sellerFeePct').value = 5;
+  sellerFeePct = 5;
   setBoardStatus('PREPARE');
 
   currentSellerEmail = null;
@@ -1464,6 +1557,12 @@ function loadBoardIntoForm(entry){
 
   setBoardStatus(entry.status || 'PREPARE');
   document.getElementById('pricePerSpot').value = entry.stats.pricePerSpot;
+
+  boardColor = entry.color || null;
+  setColorField(boardColor ? boardColor.hex : null, boardColor ? boardColor.th : null, boardColor ? boardColor.en : null);
+
+  sellerFeePct = (entry.sellerFeePct != null) ? entry.sellerFeePct : 5;
+  document.getElementById('sellerFeePct').value = sellerFeePct;
 
   hitItems = [];
   nonHitItems = [];
