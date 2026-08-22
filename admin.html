@@ -55,7 +55,8 @@
   label{display:block; font-size:13.5px; font-weight:500; margin-bottom:8px;}
   .field{margin-bottom:20px;}
   .field:last-child{margin-bottom:0;}
-  input, select{width:100%; border:1px solid var(--gray-line); background:var(--gray-bg); border-radius:10px; padding:13px 16px; font-size:14px; color:var(--dark); font-family:inherit; appearance:none;}
+  input:not([type="checkbox"]), select{width:100%; border:1px solid var(--gray-line); background:var(--gray-bg); border-radius:10px; padding:13px 16px; font-size:14px; color:var(--dark); font-family:inherit; appearance:none;}
+  input[type="checkbox"]{appearance:auto; width:18px; height:18px; accent-color:var(--dark); flex-shrink:0; cursor:pointer;}
   input:disabled{opacity:.6;}
   input::placeholder{color:var(--sub);}
   .row2{display:flex; gap:20px;}
@@ -112,6 +113,7 @@
   .mini-item .mi-sub{color:var(--sub); font-size:11.5px; margin-top:1px;}
   .mini-item .mi-price{font-weight:500; white-space:nowrap;}
   .mini-item .mi-remove{color:#B5B5B5; cursor:pointer; font-size:15px; padding:2px 4px; flex-shrink:0;}
+  .mini-item .mi-slot{background:var(--dark); color:#fff; font-size:11px; font-weight:600; padding:5px 9px; border-radius:7px; flex-shrink:0; white-space:nowrap;}
 
   .section-row{border:1px solid var(--gray-line); border-radius:16px; padding:20px 24px; display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
   .section-title{font-weight:500; font-size:16px; display:flex; align-items:center; gap:8px;}
@@ -229,8 +231,8 @@
   .sold-row .sr-name{font-weight:500;}
   .sold-row .sr-sub{font-size:11.5px; color:var(--sub); margin-top:1px;}
   .sold-row .sr-price{color:var(--sub); white-space:nowrap; flex-shrink:0; padding-top:2px;}
-  .slot-picker{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; padding:10px; background:var(--gray-bg); border-radius:10px;}
-  .slot-pill{border:1px solid var(--gray-line); background:#fff; border-radius:7px; padding:4px 8px; font-size:11px; font-weight:500; cursor:pointer; user-select:none;}
+  .slot-picker{display:grid; grid-template-columns:repeat(auto-fill, minmax(64px, 1fr)); gap:8px; margin-top:8px; padding:12px; background:var(--gray-bg); border-radius:10px; max-height:280px; overflow-y:auto;}
+  .slot-pill{border:1px solid var(--gray-line); background:#fff; border-radius:7px; padding:8px 4px; font-size:11px; font-weight:500; cursor:pointer; user-select:none; text-align:center;}
   .slot-pill.selected{background:var(--dark); color:#fff; border-color:var(--dark);}
 
   .board-row{border:1px solid var(--gray-line); border-radius:14px; padding:16px 20px; margin-bottom:10px; display:flex; align-items:center; gap:16px;}
@@ -684,14 +686,31 @@ function miniImgHtml(img){
   return img ? '<img src="'+img+'">' : '<div class="mi-noimg"></div>';
 }
 
+function padSlot(n){ return 'S-'+String(n).padStart(3,'0'); }
+
+function buildSlotMap(){
+  var map = {};
+  var slotNo = 1;
+  getCombinedEntries().forEach(function(e){
+    var start = slotNo; slotNo += e.qty; var end = slotNo - 1;
+    map[e.label] = {start:start, end:end, qty:e.qty};
+  });
+  return map;
+}
+
 function renderMiniLists(){
+  var slotMap = buildSlotMap();
+
   var hitWrap = document.getElementById('hitItemList');
   hitWrap.innerHTML = '';
   hitItems.forEach(function(item, i){
+    var slot = slotMap[item.name];
+    var slotBadge = slot ? padSlot(slot.start) : '';
     var d = document.createElement('div');
     d.className = 'mini-item';
     d.innerHTML =
       miniImgHtml(item.img)+
+      (slotBadge ? '<span class="mi-slot">'+slotBadge+'</span>' : '')+
       '<div style="flex:1; min-width:0;">'+
         '<div class="mi-name">'+item.name+'</div>'+
         '<div class="mi-sub">'+(item.sku ? 'SKU · '+item.sku+' · ' : '')+(item.condition||'')+'</div>'+
@@ -704,10 +723,13 @@ function renderMiniLists(){
   var nhWrap = document.getElementById('nonHitItemList');
   nhWrap.innerHTML = '';
   nonHitItems.forEach(function(item, i){
+    var slot = slotMap[item.name];
+    var slotBadge = slot ? (slot.qty === 1 ? padSlot(slot.start) : padSlot(slot.start)+' – '+padSlot(slot.end)) : '';
     var d = document.createElement('div');
     d.className = 'mini-item';
     d.innerHTML =
       miniImgHtml(item.img)+
+      (slotBadge ? '<span class="mi-slot">'+slotBadge+'</span>' : '')+
       '<div style="flex:1; min-width:0;">'+
         '<div class="mi-name">'+item.name+'</div>'+
         '<div class="mi-sub">'+(item.isRaw ? 'Raw' : (item.condition||''))+' · ×'+item.qty+'</div>'+
