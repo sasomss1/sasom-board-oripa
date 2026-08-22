@@ -220,12 +220,18 @@
   .live-session-actions{display:flex; gap:8px;}
   .ls-btn{border:1px solid var(--gray-line); background:#fff; border-radius:8px; padding:7px 12px; font-size:12.5px; font-weight:500; cursor:pointer;}
   .ls-btn.danger{color:#C0392B;}
-  .sold-row{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--gray-line); font-size:13px;}
+  .sold-row{display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-top:1px solid var(--gray-line); font-size:13px;}
   .sold-row:first-child{border-top:none;}
-  .sold-row input[type=checkbox]{width:17px; height:17px; accent-color:var(--dark); flex-shrink:0;}
-  .sold-row .sr-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .sold-row .sr-qty{width:70px;}
-  .sold-row .sr-qty input{padding:6px 8px; font-size:12.5px;}
+  .sold-row input[type=checkbox]{width:17px; height:17px; accent-color:var(--dark); flex-shrink:0; margin-top:3px;}
+  .sold-row img{width:36px; height:36px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--gray-bg);}
+  .sold-row .sr-noimg{width:36px; height:36px; border-radius:8px; background:var(--gray-bg); flex-shrink:0;}
+  .sold-row .sr-info{flex:1; min-width:0;}
+  .sold-row .sr-name{font-weight:500;}
+  .sold-row .sr-sub{font-size:11.5px; color:var(--sub); margin-top:1px;}
+  .sold-row .sr-price{color:var(--sub); white-space:nowrap; flex-shrink:0; padding-top:2px;}
+  .slot-picker{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; padding:10px; background:var(--gray-bg); border-radius:10px;}
+  .slot-pill{border:1px solid var(--gray-line); background:#fff; border-radius:7px; padding:4px 8px; font-size:11px; font-weight:500; cursor:pointer; user-select:none;}
+  .slot-pill.selected{background:var(--dark); color:#fff; border-color:var(--dark);}
 
   .board-row{border:1px solid var(--gray-line); border-radius:14px; padding:16px 20px; margin-bottom:10px; display:flex; align-items:center; gap:16px;}
   .board-row-main{flex:1; min-width:0;}
@@ -239,7 +245,7 @@
 <body>
 
 <div class="modal" id="formView">
-  <div class="seller-switcher" id="sellerSwitcher"></div>
+  <div id="sellerSwitcher" style="display:none;"></div>
 
   <div class="modal-head">
     <h1><span data-th>ขอสร้างบอร์ดใหม่</span><span data-en>Request New Board</span></h1>
@@ -399,7 +405,7 @@
   </div>
 
   <div class="btn-row">
-    <div class="btn-cancel"><span data-th>ยกเลิก</span><span data-en>Cancel</span></div>
+    <div class="btn-cancel" onclick="resetForm()"><span data-th>ยกเลิก</span><span data-en>Cancel</span></div>
     <div class="btn-confirm" onclick="confirmBoard()"><span data-th>ยืนยัน</span><span data-en>Confirm</span></div>
   </div>
   <div id="syncStatus" style="text-align:center; margin-top:10px; font-size:12px; color:var(--sub);"></div>
@@ -1084,35 +1090,106 @@ function openSalesModal(idx){
   document.getElementById('salesModalDate').textContent = session.date + (session.note ? ' · '+session.note : '');
 
   var entries = getCombinedEntries();
-  var allItems = entries.concat(lastOneItem ? [{label:lastOneItem.name, price:lastOneItem.price, qty:1, nonHit:false, isLastOne:true}] : []);
-
   var wrap = document.getElementById('salesItemList');
   wrap.innerHTML = '';
-  allItems.forEach(function(item, i){
+  var slotNo = 1;
+
+  entries.forEach(function(item, i){
+    var startSlot = slotNo; slotNo += item.qty; var endSlot = slotNo - 1;
     var existing = session.sales.find(function(r){ return r.label === item.label; });
+    var selectedSlots = (existing && existing.slots) ? existing.slots.slice() : [];
+
     var row = document.createElement('div');
     row.className = 'sold-row';
-    row.innerHTML =
-      '<input type="checkbox" id="soldChk-'+i+'" '+(existing && existing.sold ? 'checked' : '')+'>'+
-      '<span class="sr-name">'+item.label+(item.nonHit ? ' · non-hit' : '')+(item.isLastOne ? ' · Last One' : '')+'</span>'+
-      '<span style="color:var(--sub);">'+fmt(item.price)+'</span>'+
-      '<span class="sr-qty"><input type="number" id="soldQty-'+i+'" value="'+(existing ? existing.qty : (item.nonHit ? '' : 1))+'" placeholder=""></span>';
-    wrap.appendChild(row);
     row.dataset.label = item.label;
-    row.dataset.nonHit = item.nonHit ? '1' : '0';
+    row.dataset.qty = item.qty;
+
+    var thumb = item.img ? '<img src="'+item.img+'">' : '<div class="sr-noimg"></div>';
+    var subParts = [];
+    if(item.sku) subParts.push('SKU · '+item.sku);
+    if(item.condition) subParts.push(item.condition);
+    var subLine = subParts.join(' · ');
+
+    if(item.qty === 1){
+      row.innerHTML =
+        '<input type="checkbox" id="soldChk-'+i+'" '+(existing && existing.sold ? 'checked' : '')+'>'+
+        thumb+
+        '<div class="sr-info">'+
+          '<div class="sr-name">'+item.label+(item.nonHit?' · non-hit':'')+'</div>'+
+          (subLine ? '<div class="sr-sub">'+subLine+'</div>' : '')+
+          '<div class="sr-sub">S-'+String(startSlot).padStart(3,'0')+'</div>'+
+        '</div>'+
+        '<div class="sr-price">'+fmt(item.price)+'</div>';
+    } else {
+      row.innerHTML =
+        '<input type="checkbox" id="soldChk-'+i+'" '+(selectedSlots.length ? 'checked' : '')+' disabled>'+
+        thumb+
+        '<div class="sr-info">'+
+          '<div class="sr-name">'+item.label+(item.nonHit?' · non-hit':'')+'</div>'+
+          (subLine ? '<div class="sr-sub">'+subLine+'</div>' : '')+
+          '<div class="sr-sub" id="slotCount-'+i+'">'+selectedSlots.length+' / '+item.qty+' <span data-th>ขายแล้ว</span><span data-en>sold</span></div>'+
+          '<div class="slot-picker" id="slotPicker-'+i+'"></div>'+
+        '</div>'+
+        '<div class="sr-price">'+fmt(item.price)+'</div>';
+    }
+    wrap.appendChild(row);
+
+    if(item.qty > 1){
+      var picker = row.querySelector('#slotPicker-'+i);
+      for(var sn = startSlot; sn <= endSlot; sn++){
+        (function(sn){
+          var pill = document.createElement('div');
+          pill.className = 'slot-pill' + (selectedSlots.indexOf(sn) >= 0 ? ' selected' : '');
+          pill.textContent = 'S-'+String(sn).padStart(3,'0');
+          pill.dataset.slotNum = sn;
+          pill.onclick = function(){
+            pill.classList.toggle('selected');
+            var selCount = picker.querySelectorAll('.slot-pill.selected').length;
+            document.getElementById('soldChk-'+i).checked = selCount > 0;
+            document.getElementById('slotCount-'+i).childNodes[0].textContent = selCount + ' / ' + item.qty + ' ';
+          };
+          picker.appendChild(pill);
+        })(sn);
+      }
+    }
   });
+
+  if(lastOneItem){
+    var loIdx = entries.length;
+    var loExisting = session.sales.find(function(r){ return r.label === lastOneItem.name; });
+    var loRow = document.createElement('div');
+    loRow.className = 'sold-row';
+    loRow.dataset.label = lastOneItem.name;
+    loRow.dataset.qty = 1;
+    loRow.innerHTML =
+      '<input type="checkbox" id="soldChk-'+loIdx+'" '+(loExisting && loExisting.sold ? 'checked' : '')+'>'+
+      '<div class="sr-noimg"></div>'+
+      '<div class="sr-info"><div class="sr-name">'+lastOneItem.name+' · Last One</div></div>'+
+      '<div class="sr-price">'+fmt(lastOneItem.price)+'</div>';
+    wrap.appendChild(loRow);
+  }
+
   openPicker('salesOverlay');
 }
+
 function confirmSalesRecord(){
   var session = liveSessions[currentSalesSessionIdx];
   var rows = document.querySelectorAll('#salesItemList .sold-row');
   var sales = [];
   rows.forEach(function(row, i){
-    var chk = document.getElementById('soldChk-'+i);
-    var qtyEl = document.getElementById('soldQty-'+i);
-    var qty = +qtyEl.value || 0;
-    if(chk.checked){
-      sales.push({label: row.dataset.label, sold:true, qty: qty || 1});
+    var qty = +row.dataset.qty;
+    if(qty > 1){
+      var picker = row.querySelector('.slot-picker');
+      var selectedPills = picker ? picker.querySelectorAll('.slot-pill.selected') : [];
+      var slots = Array.prototype.map.call(selectedPills, function(p){ return +p.dataset.slotNum; });
+      if(slots.length){
+        sales.push({label: row.dataset.label, sold:true, qty: slots.length, slots: slots});
+      }
+    } else {
+      var chk = document.getElementById('soldChk-'+i);
+      if(chk && chk.checked){
+        sales.push({label: row.dataset.label, sold:true, qty:1});
+      }
     }
   });
   session.sales = sales;
@@ -1326,6 +1403,36 @@ function deleteBoardConfirm(boardId){
     .catch(function(err){ document.getElementById('boardsListSyncStatus').textContent = 'Delete failed: ' + err.message; });
 }
 
+function resetForm(){
+  document.getElementById('boardName').value = '';
+  var colorDot = document.getElementById('colorDot');
+  colorDot.style.display = 'none';
+  var colorText = document.getElementById('colorFieldText');
+  colorText.classList.add('placeholder');
+  colorText.textContent = '';
+
+  document.getElementById('pricePerSpot').value = '';
+  document.getElementById('payoutRate').value = 70;
+  setBoardStatus('PREPARE');
+
+  currentSellerEmail = null;
+  var sellerEl = document.getElementById('sellerEmailText');
+  sellerEl.classList.add('placeholder');
+  sellerEl.textContent = '';
+
+  hitItems = [];
+  nonHitItems = [];
+  lastOneItem = null;
+  liveSessions = [];
+
+  recalc();
+  renderLiveHistory();
+
+  // Drop any ?edit=/?view= from the URL so a refresh or "All Boards" round-trip
+  // can't silently bring the old board's data back.
+  history.replaceState(null, '', 'admin.html');
+}
+
 function loadBoardIntoForm(entry){
   document.getElementById('boardName').value = entry.boardName;
   currentSellerEmail = entry.sellerEmail;
@@ -1361,13 +1468,23 @@ function setLang(lang){
 }
 
 // ============== INIT ==============
-buildSellerOptions();
-renderLiveHistory();
-recalc();
-
 var urlParams = new URLSearchParams(location.search);
 var viewParam = urlParams.get('view');
 var editParam = urlParams.get('edit');
+
+// A plain visit (no ?edit=) always starts blank — never carries over
+// whatever board was last loaded/edited in this tab.
+if(!editParam){
+  hitItems = [];
+  nonHitItems = [];
+  lastOneItem = null;
+  liveSessions = [];
+  currentSellerEmail = null;
+}
+
+buildSellerOptions();
+renderLiveHistory();
+recalc();
 
 if(viewParam === 'boards'){
   document.getElementById('formView').style.display = 'none';
@@ -1382,6 +1499,14 @@ fetchAllBoardsFromServer().then(function(){
   if(editParam){
     var match = savedBoards.find(function(b){ return b.boardId === editParam; });
     if(match) loadBoardIntoForm(match);
+  }
+});
+
+// Guard against the browser restoring a stale, already-edited state from
+// back/forward cache (bfcache) instead of a fresh load.
+window.addEventListener('pageshow', function(event){
+  if(event.persisted){
+    location.reload();
   }
 });
 </script>
