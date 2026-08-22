@@ -84,6 +84,10 @@
   .live-session{border:1px solid var(--gray-line); border-radius:12px; padding:14px 16px; margin-bottom:10px;}
   .live-session-date{font-weight:600; font-size:14px;}
   .live-session-meta{font-size:12px; color:var(--sub); margin-top:2px;}
+  .live-session-top-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
+  .live-pay-row{display:flex; gap:16px; margin-top:10px; padding-top:10px; border-top:1px solid var(--gray-line);}
+  .lp-stat{font-size:11px; color:var(--sub);}
+  .lp-stat b{display:block; font-size:13.5px; color:var(--dark); font-weight:600; margin-top:1px;}
   .sold-item-row{display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0; border-top:1px solid var(--gray-line);}
   .sold-item-row:first-child{border-top:none;}
 </style>
@@ -243,10 +247,31 @@ function renderBoard(){
   html += '</div>';
 
   var sessions = b.liveSessions || [];
-  html += '<div class="card"><h2><span data-th>ประวัติการไลฟ์</span><span data-en>Live History</span> ('+sessions.length+')</h2>';
+  var pricePerSpot = b.stats.pricePerSpot;
+  var feePct = (b.sellerFeePct != null) ? b.sellerFeePct : 5;
+
+  var totalSpotsSold = 0, totalSaleValue = 0, totalFee = 0, totalPayout = 0;
+
+  html += '<div class="card"><h2><span data-th>ประวัติการไลฟ์ & การจ่ายเงิน</span><span data-en>Live History & Payment</span> ('+sessions.length+')</h2>';
   sessions.forEach(function(s){
       var soldItems = (s.sales||[]).filter(function(r){ return r.sold; });
-      html += '<div class="live-session"><div class="live-session-date">'+s.date+(s.note ? ' · '+s.note : '')+'</div>';
+      var soldQty = soldItems.reduce(function(sum,r){ return sum + (r.qty||0); }, 0);
+      var saleValue = soldQty * pricePerSpot;
+      var feeAmount = saleValue * (feePct/100);
+      var payout = saleValue - feeAmount;
+      var status = s.paymentStatus || 'PENDING';
+
+      if(status !== 'CANCEL'){
+        totalSpotsSold += soldQty;
+        totalSaleValue += saleValue;
+        totalFee += feeAmount;
+        totalPayout += payout;
+      }
+
+      html += '<div class="live-session"><div class="live-session-top-row">'+
+        '<div class="live-session-date">'+s.date+(s.note ? ' · '+s.note : '')+'</div>'+
+        '<span class="status-badge '+status.toLowerCase()+'">'+status+'</span>'+
+      '</div>';
       if(!soldItems.length){
         html += '<div class="live-session-meta"><span data-th>ยังไม่ได้บันทึกยอดขาย</span><span data-en>No sales recorded</span></div>';
       } else {
@@ -254,10 +279,23 @@ function renderBoard(){
           var slotsTxt = r.slots ? ' (' + r.slots.map(function(n){ return 'S-'+String(n).padStart(3,'0'); }).join(', ') + ')' : '';
           html += '<div class="sold-item-row"><span>'+r.label+slotsTxt+'</span><span>× '+r.qty+'</span></div>';
         });
+        html += '<div class="live-pay-row">'+
+          '<div class="lp-stat"><span data-th>ยอดขาย</span><span data-en>Sale value</span><b>'+fmt(saleValue)+'</b></div>'+
+          '<div class="lp-stat"><span data-th>หัก '+feePct+'%</span><span data-en>Fee '+feePct+'%</span><b>-'+fmt(feeAmount)+'</b></div>'+
+          '<div class="lp-stat"><span data-th>ได้รับ</span><span data-en>You receive</span><b>'+fmt(payout)+'</b></div>'+
+        '</div>';
       }
       html += '</div>';
     });
   html += '</div>';
+
+  html += '<div class="card"><h2><span data-th>สรุปยอดจ่ายรวม</span><span data-en>Payment Summary</span></h2>'+
+    '<div class="stat-grid">'+
+      '<div class="stat-card"><div class="l"><span data-th>ช่องขายไปแล้วรวม</span><span data-en>Total spots sold</span></div><div class="v">'+totalSpotsSold+'</div></div>'+
+      '<div class="stat-card"><div class="l"><span data-th>ยอดขายรวม</span><span data-en>Total sale value</span></div><div class="v">'+fmt(totalSaleValue)+'</div></div>'+
+      '<div class="stat-card"><div class="l"><span data-th>หักรวม</span><span data-en>Total fee deducted</span></div><div class="v">'+fmt(totalFee)+'</div></div>'+
+      '<div class="stat-card accent"><div class="l"><span data-th>ยอดที่จะได้รับรวม</span><span data-en>Total you receive</span></div><div class="v">'+fmt(totalPayout)+'</div></div>'+
+    '</div></div>';
 
   wrap.innerHTML = html;
 }
