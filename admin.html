@@ -188,6 +188,10 @@
   .grade-cell.selected{background:var(--dark); border-color:var(--dark);}
   .grade-cell.selected .gc-val, .grade-cell.selected .gc-sub{color:#fff;}
 
+  .type-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:20px;}
+  .type-cell{border:1px solid var(--gray-line); border-radius:12px; padding:16px 10px; text-align:center; cursor:pointer; font-weight:600; font-size:13.5px;}
+  .type-cell.selected{background:var(--dark); color:#fff; border-color:var(--dark);}
+
   /* seller page view */
   #sellerPageView{display:none;}
   .back-link{font-size:13.5px; font-weight:500; color:var(--sub); cursor:pointer; display:inline-flex; align-items:center; gap:6px;}
@@ -563,16 +567,20 @@
         <div class="field"><label>SKU <span class="hint">(<span data-th>ถ้ามี</span><span data-en>optional</span>)</span></label><input type="text" id="manualSku" placeholder=""></div>
       </div>
 
-      <div class="raw-row" id="rawRow" onclick="document.getElementById('rawCheck').click()" style="display:none;">
-        <input type="checkbox" id="rawCheck" onclick="event.stopPropagation(); onRawToggle()">
-        <div>
-          <div class="rr-title"><span data-th>การ์ด Raw</span><span data-en>Raw card</span></div>
-        </div>
-      </div>
-
       <div class="btn-row">
         <div class="btn-cancel" onclick="closePicker('itemOverlay')"><span data-th>ยกเลิก</span><span data-en>Cancel</span></div>
-        <div class="btn-confirm" id="step1NextBtn" onclick="goToStep2()"><span data-th>ถัดไป</span><span data-en>Next</span></div>
+        <div class="btn-confirm" id="step1NextBtn" onclick="goToTypeStep()"><span data-th>ถัดไป</span><span data-en>Next</span></div>
+      </div>
+    </div>
+
+    <!-- STEP 1b: product type -->
+    <div id="wizStepType" style="display:none;">
+      <div class="product-mini-card" id="pmcBoxType"></div>
+      <label><span data-th>ประเภทสินค้า</span><span data-en>Product Type</span></label>
+      <div class="type-grid" id="typeGrid"></div>
+      <div class="btn-row">
+        <div class="btn-cancel" onclick="backToStep1()"><span data-th>ย้อนกลับ</span><span data-en>Back</span></div>
+        <div class="btn-confirm" onclick="goToStep2FromType()"><span data-th>ถัดไป</span><span data-en>Next</span></div>
       </div>
     </div>
 
@@ -590,7 +598,7 @@
       <div class="grade-grid" id="gradeGrid"></div>
 
       <div class="btn-row">
-        <div class="btn-cancel" onclick="backToStep1()"><span data-th>← ย้อนกลับ</span><span data-en>← Back</span></div>
+        <div class="btn-cancel" onclick="backToTypeStep()"><span data-th>ย้อนกลับ</span><span data-en>Back</span></div>
         <div class="btn-confirm" id="step2NextBtn" onclick="goToStep3()"><span data-th>ถัดไป</span><span data-en>Next</span></div>
       </div>
     </div>
@@ -603,7 +611,7 @@
         <div class="field" id="wizQtyField"><label><span data-th>จำนวน</span><span data-en>Qty</span></label><input type="number" id="wizQty" value="1"></div>
       </div>
       <div class="btn-row">
-        <div class="btn-cancel" onclick="backFromStep3()"><span data-th>← ย้อนกลับ</span><span data-en>← Back</span></div>
+        <div class="btn-cancel" onclick="backFromStep3()"><span data-th>ย้อนกลับ</span><span data-en>Back</span></div>
         <div class="btn-confirm" onclick="confirmWizardAdd()"><span data-th>เพิ่ม</span><span data-en>Add</span></div>
       </div>
     </div>
@@ -905,10 +913,12 @@ function confirmLastOne(){
 // ============== ADD ITEM WIZARD (hit / non-hit) ==============
 var currentAddType = null;      // 'hit' | 'nonhit'
 var productSource = 'link';     // 'link' | 'manual'
-var isRawSelected = false;
 var wizProduct = null;          // {name, sku, img}
+var wizProductType = null;      // 'Grade Card' | 'Booster Box' | 'Booster Pack' | 'Booster Bundle' | 'Raw Card' | 'Other'
 var wizGradeCompany = 'PSA';
 var wizGrade = null;            // {val, sub}
+
+var PRODUCT_TYPES = ['Grade Card', 'Booster Box', 'Booster Pack', 'Booster Bundle', 'Raw Card', 'Other'];
 
 var addTypeLabels = {
   hit: {th:'เพิ่มการ์ดฮิต', en:'Add hit card'},
@@ -918,8 +928,8 @@ var addTypeLabels = {
 function openAddModal(type){
   currentAddType = type;
   productSource = 'link';
-  isRawSelected = false;
   wizProduct = null;
+  wizProductType = null;
   wizGradeCompany = 'PSA';
   wizGrade = null;
 
@@ -931,12 +941,11 @@ function openAddModal(type){
   document.getElementById('manualName').value = '';
   document.getElementById('manualImg').value = '';
   document.getElementById('manualSku').value = '';
-  document.getElementById('rawCheck').checked = false;
-  document.getElementById('rawRow').style.display = (type === 'nonhit') ? 'flex' : 'none';
   document.getElementById('wizQtyField').style.display = (type === 'nonhit') ? 'block' : 'none';
 
   setProductSource('link');
   document.getElementById('wizStep1').style.display = 'block';
+  document.getElementById('wizStepType').style.display = 'none';
   document.getElementById('wizStep2').style.display = 'none';
   document.getElementById('wizStep3').style.display = 'none';
   openPicker('itemOverlay');
@@ -948,10 +957,6 @@ function setProductSource(src){
   document.getElementById('tabManual').classList.toggle('active', src==='manual');
   document.getElementById('linkFields').style.display = src==='link' ? 'block' : 'none';
   document.getElementById('manualFields').style.display = src==='manual' ? 'block' : 'none';
-}
-
-function onRawToggle(){
-  isRawSelected = document.getElementById('rawCheck').checked;
 }
 
 function slugToName(slug){
@@ -996,19 +1001,8 @@ function renderFetchedPreview(warning){
     '</div>';
 }
 
-function goToStep2(){
-  if(currentAddType === 'nonhit' && isRawSelected){
-    // Raw card: skip grade step entirely, go straight to price/qty
-    wizProduct = productSource === 'link'
-      ? (wizProduct || {name:document.getElementById('sasomLink').value || 'Raw card', sku:'', img:''})
-      : {name:document.getElementById('manualName').value || 'Raw card', sku:document.getElementById('manualSku').value, img:document.getElementById('manualImg').value};
-    wizGrade = null;
-    renderStep3ProductBox();
-    document.getElementById('wizStep1').style.display = 'none';
-    document.getElementById('wizStep3').style.display = 'block';
-    return;
-  }
-
+// ---- Step 1 -> Step 1b (product type) ----
+function goToTypeStep(){
   if(productSource === 'manual'){
     var name = document.getElementById('manualName').value.trim();
     if(!name) return;
@@ -1017,15 +1011,55 @@ function goToStep2(){
     if(!wizProduct){ return; } // must fetch first
   }
 
-  renderProductMiniCard('pmcBox');
-  setGradeCompany('PSA');
+  renderProductMiniCard('pmcBoxType');
+  renderTypeGrid();
   document.getElementById('wizStep1').style.display = 'none';
-  document.getElementById('wizStep2').style.display = 'block';
+  document.getElementById('wizStepType').style.display = 'block';
 }
 
 function backToStep1(){
-  document.getElementById('wizStep2').style.display = 'none';
+  document.getElementById('wizStepType').style.display = 'none';
   document.getElementById('wizStep1').style.display = 'block';
+}
+
+function renderTypeGrid(){
+  var grid = document.getElementById('typeGrid');
+  grid.innerHTML = '';
+  PRODUCT_TYPES.forEach(function(t){
+    var cell = document.createElement('div');
+    cell.className = 'type-cell' + (wizProductType === t ? ' selected' : '');
+    cell.textContent = t;
+    cell.onclick = function(){
+      document.querySelectorAll('#typeGrid .type-cell').forEach(function(c){ c.classList.remove('selected'); });
+      cell.classList.add('selected');
+      wizProductType = t;
+    };
+    grid.appendChild(cell);
+  });
+}
+
+// ---- Step 1b -> Step 2 (grade) OR straight to Step 3 ----
+function goToStep2FromType(){
+  if(!wizProductType) return;
+
+  if(wizProductType === 'Grade Card'){
+    renderProductMiniCard('pmcBox');
+    setGradeCompany('PSA');
+    document.getElementById('wizStepType').style.display = 'none';
+    document.getElementById('wizStep2').style.display = 'block';
+  } else {
+    wizGrade = null;
+    renderStep3ProductBox();
+    document.getElementById('wizStepType').style.display = 'none';
+    document.getElementById('wizStep3').style.display = 'block';
+    document.getElementById('wizPrice').value = '';
+    document.getElementById('wizQty').value = 1;
+  }
+}
+
+function backToTypeStep(){
+  document.getElementById('wizStep2').style.display = 'none';
+  document.getElementById('wizStepType').style.display = 'block';
 }
 
 function renderProductMiniCard(targetId){
@@ -1063,9 +1097,16 @@ function goToStep3(){
   document.getElementById('wizQty').value = 1;
 }
 
+function currentConditionLabel(){
+  if(wizProductType === 'Grade Card'){
+    return wizGrade ? (wizGradeCompany+' '+wizGrade.val+(wizGrade.sub ? ' '+wizGrade.sub : '')) : '';
+  }
+  return wizProductType || '';
+}
+
 function renderStep3ProductBox(){
   var el = document.getElementById('pmcBox2');
-  var condLine = wizGrade ? (wizGradeCompany+' '+wizGrade.val+(wizGrade.sub ? ' '+wizGrade.sub : '')) : (isRawSelected ? 'Raw' : '');
+  var condLine = currentConditionLabel();
   el.innerHTML =
     (wizProduct.img ? '<img src="'+wizProduct.img+'">' : '<div class="pmc-noimg"></div>')+
     '<div><div class="pmc-name">'+wizProduct.name+'</div>'+
@@ -1076,10 +1117,10 @@ function renderStep3ProductBox(){
 
 function backFromStep3(){
   document.getElementById('wizStep3').style.display = 'none';
-  if(currentAddType === 'nonhit' && isRawSelected){
-    document.getElementById('wizStep1').style.display = 'block';
-  } else {
+  if(wizProductType === 'Grade Card'){
     document.getElementById('wizStep2').style.display = 'block';
+  } else {
+    document.getElementById('wizStepType').style.display = 'block';
   }
 }
 
@@ -1087,12 +1128,13 @@ function confirmWizardAdd(){
   var price = +document.getElementById('wizPrice').value || 0;
   var qty = +document.getElementById('wizQty').value || 1;
   if(!price) return;
-  var condition = wizGrade ? (wizGradeCompany+' '+wizGrade.val+(wizGrade.sub ? ' '+wizGrade.sub : '')) : (isRawSelected ? 'Raw' : '');
+  var condition = currentConditionLabel();
+  var isRaw = (wizProductType === 'Raw Card');
 
   if(currentAddType === 'hit'){
     hitItems.push({name:wizProduct.name, sku:wizProduct.sku, img:wizProduct.img, condition:condition, price:price});
   } else {
-    nonHitItems.push({name:wizProduct.name, sku:wizProduct.sku, img:wizProduct.img, condition:condition, isRaw:isRawSelected, price:price, qty:qty});
+    nonHitItems.push({name:wizProduct.name, sku:wizProduct.sku, img:wizProduct.img, condition:condition, isRaw:isRaw, price:price, qty:qty});
   }
   closePicker('itemOverlay');
   recalc();
