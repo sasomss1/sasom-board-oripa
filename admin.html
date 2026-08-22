@@ -226,6 +226,14 @@
   .sold-row .sr-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .sold-row .sr-qty{width:70px;}
   .sold-row .sr-qty input{padding:6px 8px; font-size:12.5px;}
+
+  .board-row{border:1px solid var(--gray-line); border-radius:14px; padding:16px 20px; margin-bottom:10px; display:flex; align-items:center; gap:16px;}
+  .board-row-main{flex:1; min-width:0;}
+  .board-row-title{display:flex; align-items:center; gap:8px; font-weight:600; font-size:15px;}
+  .board-row-sub{font-size:12.5px; color:var(--sub); margin-top:2px;}
+  .board-row-stats{display:flex; gap:20px; font-size:12.5px; color:var(--sub); flex-shrink:0;}
+  .board-row-stats b{display:block; color:var(--dark); font-size:14px; font-weight:600;}
+  .board-row-actions{display:flex; gap:8px; flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -236,6 +244,7 @@
   <div class="modal-head">
     <h1><span data-th>ขอสร้างบอร์ดใหม่</span><span data-en>Request New Board</span></h1>
     <div class="head-right">
+      <button class="change-btn" onclick="window.open('admin.html?view=boards','_blank')">📋 <span data-th>บอร์ดทั้งหมด</span><span data-en>All Boards</span></button>
       <div class="toggle-pill" onclick="setLang(document.documentElement.getAttribute('data-lang')==='th'?'en':'th')">
         <div class="opt th">TH</div>
         <div class="opt en active">EN</div>
@@ -265,8 +274,8 @@
 
     <div class="row2">
       <div class="field">
-        <div class="row-label"><label><span data-th>จำนวนช่องทั้งหมด</span><span data-en>Total spots</span></label><span class="hint"><span data-th>สูงสุด 200</span><span data-en>Max 200</span></span></div>
-        <input type="number" id="totalSlots" placeholder="" oninput="recalc()">
+        <div class="row-label"><label><span data-th>จำนวนช่องทั้งหมด</span><span data-en>Total spots</span></label><span class="hint"><span data-th>รวมจากฮิต+ไม่ฮิต</span><span data-en>= hit + non-hit qty</span></span></div>
+        <input type="number" id="totalSlots" value="0" readonly style="background:#EDEDED; color:var(--sub);">
       </div>
       <div class="field">
         <label><span data-th>ราคาต่อช่อง</span><span data-en>Price per spot</span></label>
@@ -409,6 +418,7 @@
   </div>
 
   <div class="back-link" id="spBackLink" onclick="showForm()">← <span data-th>กลับไปแก้ไข / สร้างบอร์ดอื่น</span><span data-en>Back to edit / create another board</span></div>
+  <button class="change-btn" onclick="window.open('admin.html?view=boards','_blank')" style="margin-bottom:18px;">📋 <span data-th>บอร์ดทั้งหมด</span><span data-en>All Boards</span></button>
 
   <div class="seller-page-head">
     <div>
@@ -431,6 +441,22 @@
   </div>
 
   <div class="item-list" id="spItemList"></div>
+</div>
+
+<!-- ALL BOARDS LIST VIEW (opened via admin.html?view=boards) -->
+<div class="modal" id="boardsListView" style="display:none;">
+  <div class="modal-head">
+    <h1><span data-th>บอร์ดทั้งหมด</span><span data-en>All Boards</span></h1>
+    <div class="head-right">
+      <button class="add-btn" onclick="location.href='admin.html'">+ <span data-th>สร้างบอร์ดใหม่</span><span data-en>Create new board</span></button>
+      <div class="toggle-pill" onclick="setLang(document.documentElement.getAttribute('data-lang')==='th'?'en':'th')">
+        <div class="opt th">TH</div>
+        <div class="opt en active">EN</div>
+      </div>
+    </div>
+  </div>
+  <div id="boardsListSyncStatus" style="font-size:12px; color:var(--sub); margin-bottom:16px;"></div>
+  <div id="boardsListWrap"></div>
 </div>
 
 <!-- COLOR PICKER -->
@@ -485,7 +511,7 @@
           <label><span data-th>ลิงก์สินค้า SASOM</span><span data-en>SASOM product link</span></label>
           <div class="link-fetch-row">
             <input type="text" id="sasomLink" placeholder="">
-            <button onclick="fetchFromLink()"><span data-th>ดึงข้อมูล</span><span data-en>Search</span></button>
+            <button onclick="fetchFromLink()"><span data-th>ค้นหา</span><span data-en>Search</span></button>
           </div>
         </div>
         <div id="fetchedPreview"></div>
@@ -701,7 +727,6 @@ function removeNonHitItem(i){ nonHitItems.splice(i,1); recalc(); }
 function removeLastOne(){ lastOneItem = null; recalc(); }
 
 function recalc(){
-  var totalSlots = +document.getElementById('totalSlots').value || 0;
   var pricePerSpot = +document.getElementById('pricePerSpot').value || 0;
   var payoutRate = (+document.getElementById('payoutRate').value || 0) / 100;
 
@@ -713,6 +738,11 @@ function recalc(){
   entries.forEach(function(e){ totalQty += e.qty; ladderCost += e.price * e.qty; if(e.nonHit) nonHitCount += e.qty; });
   var lastOneCost = lastOneItem ? lastOneItem.price : 0;
   var totalCost = ladderCost + lastOneCost;
+
+  // Total spots is always derived from the hit + non-hit lists — never typed in manually,
+  // so it can never drift out of sync with what's actually on the board.
+  var totalSlots = totalQty;
+  document.getElementById('totalSlots').value = totalSlots;
 
   var maxMoney = pricePerSpot * totalSlots;
   var costPct = maxMoney > 0 ? (totalCost / maxMoney) * 100 : 0;
@@ -737,6 +767,8 @@ function recalc(){
 
   return {totalSlots:totalSlots, pricePerSpot:pricePerSpot, maxMoney:maxMoney, totalCost:totalCost, costPct:costPct, profit:profit, profitPct:profitPct, avgPrize:avgPrize, breakEven:breakEven, hitCount:hitCount, nonHitCount:nonHitCount};
 }
+
+
 
 // ============== COLOR PICKER ==============
 function openPicker(id){ document.getElementById(id).classList.add('open'); }
@@ -859,7 +891,7 @@ function fetchFromLink(){
     return;
   }
 
-  box.innerHTML = '<p class="hint" style="margin-top:12px;">กำลังดึงข้อมูล... / Fetching...</p>';
+  box.innerHTML = '<p class="hint" style="margin-top:12px;">กำลังค้นหา... / Searching...</p>';
 
   fetch(API_URL + '?action=fetchProduct&url=' + encodeURIComponent(link))
     .then(function(r){ return r.json(); })
@@ -1120,10 +1152,10 @@ function setSyncStatus(text){
 function fetchAllBoardsFromServer(){
   if(!apiConfigured()){
     setSyncStatus('API_URL ยังไม่ได้ตั้งค่า — แก้ตัวแปร API_URL ในไฟล์นี้ก่อน / API_URL not set — edit the API_URL variable in this file first');
-    return;
+    return Promise.resolve();
   }
   setSyncStatus('กำลังซิงก์... / Syncing...');
-  fetch(API_URL + '?action=getAll')
+  return fetch(API_URL + '?action=getAll')
     .then(function(r){ return r.json(); })
     .then(function(res){
       if(res.ok){
@@ -1239,7 +1271,86 @@ function showSellerPage(entry){
 
 function showForm(){
   document.getElementById('sellerPageView').style.display = 'none';
+  document.getElementById('boardsListView').style.display = 'none';
   document.getElementById('formView').style.display = 'block';
+}
+
+// ============== ALL BOARDS LIST (manage / edit / delete) ==============
+function renderBoardsList(){
+  var wrap = document.getElementById('boardsListWrap');
+  wrap.innerHTML = '';
+  if(!savedBoards.length){
+    wrap.innerHTML = '<p class="hint">No boards yet.</p>';
+    return;
+  }
+  savedBoards.forEach(function(b){
+    var row = document.createElement('div');
+    row.className = 'board-row';
+    row.innerHTML =
+      '<div class="board-row-main">'+
+        '<div class="board-row-title">'+b.boardName+' <span class="status-badge '+(b.status||'PREPARE').toLowerCase()+'">'+(b.status||'PREPARE')+'</span></div>'+
+        '<div class="board-row-sub">'+b.sellerEmail+'</div>'+
+      '</div>'+
+      '<div class="board-row-stats">'+
+        '<div>Price/spot<b>'+fmt(b.stats.pricePerSpot)+'</b></div>'+
+        '<div>Spots<b>'+b.stats.totalSlots+'</b></div>'+
+        '<div>Max Money<b>'+fmt(b.stats.maxMoney)+'</b></div>'+
+        '<div>Hit/Non-hit<b>'+b.stats.hitCount+' / '+b.stats.nonHitCount+'</b></div>'+
+      '</div>'+
+      '<div class="board-row-actions">'+
+        '<button class="ls-btn" onclick="editBoard(\''+b.boardId+'\')">Edit</button>'+
+        '<button class="ls-btn danger" onclick="deleteBoardConfirm(\''+b.boardId+'\')">Delete</button>'+
+      '</div>';
+    wrap.appendChild(row);
+  });
+}
+
+function editBoard(boardId){
+  location.href = 'admin.html?edit=' + encodeURIComponent(boardId);
+}
+
+function deleteBoardConfirm(boardId){
+  if(!confirm('Delete this board? This cannot be undone.')) return;
+  document.getElementById('boardsListSyncStatus').textContent = 'Deleting...';
+  fetch(API_URL, { method:'POST', body: JSON.stringify({ action:'deleteBoard', boardId: boardId }) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(res.ok){
+        savedBoards = savedBoards.filter(function(b){ return b.boardId !== boardId; });
+        renderBoardsList();
+        document.getElementById('boardsListSyncStatus').textContent = 'Deleted.';
+      } else {
+        document.getElementById('boardsListSyncStatus').textContent = 'Delete error: ' + res.error;
+      }
+    })
+    .catch(function(err){ document.getElementById('boardsListSyncStatus').textContent = 'Delete failed: ' + err.message; });
+}
+
+function loadBoardIntoForm(entry){
+  document.getElementById('boardName').value = entry.boardName;
+  currentSellerEmail = entry.sellerEmail;
+  var sellerEl = document.getElementById('sellerEmailText');
+  sellerEl.classList.remove('placeholder');
+  sellerEl.textContent = entry.sellerEmail;
+
+  setBoardStatus(entry.status || 'PREPARE');
+  document.getElementById('pricePerSpot').value = entry.stats.pricePerSpot;
+
+  hitItems = [];
+  nonHitItems = [];
+  (entry.entriesSnapshot || []).forEach(function(e){
+    if(e.nonHit){
+      nonHitItems.push({name:e.label, sku:e.sku||'', img:e.img||'', condition:e.condition==='Raw' ? '' : e.condition, isRaw:e.condition==='Raw', price:e.price, qty:e.qty});
+    } else {
+      hitItems.push({name:e.label, sku:e.sku||'', img:e.img||'', condition:e.condition||'', price:e.price});
+    }
+  });
+  lastOneItem = entry.lastOneSnapshot || null;
+  liveSessions = entry.liveSessions || [];
+
+  recalc();
+  renderLiveHistory();
+  showForm();
 }
 
 // ============== LANGUAGE ==============
@@ -1253,7 +1364,26 @@ function setLang(lang){
 buildSellerOptions();
 renderLiveHistory();
 recalc();
-fetchAllBoardsFromServer();
+
+var urlParams = new URLSearchParams(location.search);
+var viewParam = urlParams.get('view');
+var editParam = urlParams.get('edit');
+
+if(viewParam === 'boards'){
+  document.getElementById('formView').style.display = 'none';
+  document.getElementById('sellerPageView').style.display = 'none';
+  document.getElementById('boardsListView').style.display = 'block';
+}
+
+fetchAllBoardsFromServer().then(function(){
+  if(viewParam === 'boards'){
+    renderBoardsList();
+  }
+  if(editParam){
+    var match = savedBoards.find(function(b){ return b.boardId === editParam; });
+    if(match) loadBoardIntoForm(match);
+  }
+});
 </script>
 </body>
 </html>
