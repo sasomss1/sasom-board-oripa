@@ -251,7 +251,8 @@ function renderBoard(){
         html += '<div class="live-session-meta"><span data-th>ยังไม่ได้บันทึกยอดขาย</span><span data-en>No sales recorded</span></div>';
       } else {
         soldItems.forEach(function(r){
-          html += '<div class="sold-item-row"><span>'+r.label+'</span><span>× '+r.qty+'</span></div>';
+          var slotsTxt = r.slots ? ' (' + r.slots.map(function(n){ return 'S-'+String(n).padStart(3,'0'); }).join(', ') + ')' : '';
+          html += '<div class="sold-item-row"><span>'+r.label+slotsTxt+'</span><span>× '+r.qty+'</span></div>';
         });
       }
       html += '</div>';
