@@ -219,17 +219,22 @@
   .status-badge.off{background:#FBEAEA; color:#C0392B;}
 
   .live-session{border:1px solid var(--gray-line); border-radius:12px; padding:14px 16px; margin-bottom:10px;}
-  .live-session-top{display:flex; justify-content:space-between; align-items:center;}
+  .live-session-top{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;}
   .live-session-date{font-weight:600; font-size:14px;}
   .live-session-meta{font-size:12px; color:var(--sub); margin-top:2px;}
   .live-session-actions{display:flex; gap:8px;}
-  .live-pay-row{display:flex; align-items:center; gap:14px; margin-top:12px; padding-top:12px; border-top:1px solid var(--gray-line);}
-  .lp-stat{font-size:11px; color:var(--sub);}
-  .lp-stat b{display:block; font-size:14px; color:var(--dark); font-weight:600; margin-top:1px;}
-  .pay-status{margin-left:auto; border:1px solid var(--gray-line); border-radius:8px; padding:7px 10px; font-size:12px; font-weight:600; background:#F5F5F5; color:var(--sub); appearance:auto;}
+  .live-pay-status-row{display:flex; justify-content:flex-end; margin-top:10px;}
+  .pay-status{width:auto; border:1px solid var(--gray-line); border-radius:8px; padding:7px 12px; font-size:12px; font-weight:600; background:#F5F5F5; color:var(--sub); appearance:auto;}
   .pay-status-pending{background:#FFF6DC; color:#6B5900; border-color:#F0E0A8;}
   .pay-status-done{background:#EAF7EA; color:#2E7D32; border-color:#B7E3B7;}
   .pay-status-cancel{background:#FBEAEA; color:#C0392B; border-color:#E9B9B9;}
+  .live-pay-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--gray-line);}
+  .lp-box{background:var(--gray-bg); border-radius:10px; padding:10px 12px; min-width:0;}
+  .lp-box.accent{background:var(--dark);}
+  .lp-label{font-size:11px; color:var(--sub); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .lp-box.accent .lp-label{color:#C9C9C9;}
+  .lp-value{font-size:14px; font-weight:600; color:var(--dark); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .lp-box.accent .lp-value{color:var(--accent);}
   .ls-btn{border:1px solid var(--gray-line); background:#fff; border-radius:8px; padding:7px 12px; font-size:12.5px; font-weight:500; cursor:pointer;}
   .ls-btn.danger{color:#C0392B;}
   .sold-row{display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-top:1px solid var(--gray-line); font-size:13px;}
@@ -1124,10 +1129,17 @@ function removeLiveSession(id){
   maybeAutoSave();
 }
 
+function formatDateDMY(iso){
+  if(!iso) return '—';
+  var parts = iso.split('-');
+  if(parts.length !== 3) return iso;
+  return parts[2] + '/' + parts[1] + '/' + parts[0];
+}
+
 function renderLiveHistory(){
   document.getElementById('liveCount').textContent = liveSessions.length;
-  document.getElementById('liveFirst').textContent = liveSessions.length ? liveSessions[0].date : '—';
-  document.getElementById('liveLatest').textContent = liveSessions.length ? liveSessions[liveSessions.length-1].date : '—';
+  document.getElementById('liveFirst').textContent = liveSessions.length ? formatDateDMY(liveSessions[0].date) : '—';
+  document.getElementById('liveLatest').textContent = liveSessions.length ? formatDateDMY(liveSessions[liveSessions.length-1].date) : '—';
 
   var pricePerSpot = +document.getElementById('pricePerSpot').value || 0;
   var feePct = sellerFeePct || 0;
@@ -1156,22 +1168,24 @@ function renderLiveHistory(){
     div.className = 'live-session';
     div.innerHTML =
       '<div class="live-session-top">'+
-        '<div><div class="live-session-date">'+s.date+(s.note ? ' · '+s.note : '')+'</div>'+
+        '<div><div class="live-session-date">'+formatDateDMY(s.date)+(s.note ? ' · '+s.note : '')+'</div>'+
         '<div class="live-session-meta">'+(s.sales.length ? (soldCount+' <span data-th>รายการขายแล้ว</span><span data-en>items sold</span> · '+soldQty+' <span data-th>ช่อง</span><span data-en>spots</span>') : '<span data-th>ยังไม่ได้บันทึกยอดขาย</span><span data-en>No sales recorded yet</span>')+'</div></div>'+
         '<div class="live-session-actions">'+
           '<button class="ls-btn" onclick="openSalesModal('+i+')"><span data-th>บันทึกยอดขาย</span><span data-en>Record sales</span></button>'+
           '<button class="ls-btn danger" onclick="removeLiveSession('+s.id+')">×</button>'+
         '</div>'+
       '</div>'+
-      '<div class="live-pay-row">'+
-        '<div class="lp-stat"><span data-th>ยอดขาย</span><span data-en>Sale value</span><b>'+fmt(saleValue)+'</b></div>'+
-        '<div class="lp-stat"><span data-th>หัก '+feePct+'%</span><span data-en>Fee '+feePct+'%</span><b>-'+fmt(feeAmount)+'</b></div>'+
-        '<div class="lp-stat"><span data-th>จ่าย Seller</span><span data-en>Payout</span><b>'+fmt(payout)+'</b></div>'+
+      '<div class="live-pay-status-row">'+
         '<select class="pay-status pay-status-'+s.paymentStatus.toLowerCase()+'" onchange="setPaymentStatus('+i+',this.value)">'+
           '<option value="PENDING" '+(s.paymentStatus==='PENDING'?'selected':'')+'>PENDING</option>'+
           '<option value="DONE" '+(s.paymentStatus==='DONE'?'selected':'')+'>DONE</option>'+
           '<option value="CANCEL" '+(s.paymentStatus==='CANCEL'?'selected':'')+'>CANCEL</option>'+
         '</select>'+
+      '</div>'+
+      '<div class="live-pay-grid">'+
+        '<div class="lp-box"><div class="lp-label"><span data-th>ยอดขาย</span><span data-en>Sale value</span></div><div class="lp-value">'+fmt(saleValue)+'</div></div>'+
+        '<div class="lp-box"><div class="lp-label"><span data-th>หัก '+feePct+'%</span><span data-en>Fee '+feePct+'%</span></div><div class="lp-value">-'+fmt(feeAmount)+'</div></div>'+
+        '<div class="lp-box accent"><div class="lp-label"><span data-th>จ่าย Seller</span><span data-en>Payout</span></div><div class="lp-value">'+fmt(payout)+'</div></div>'+
       '</div>';
     wrap.appendChild(div);
   });
@@ -1192,7 +1206,7 @@ var currentSalesSessionIdx = null;
 function openSalesModal(idx){
   currentSalesSessionIdx = idx;
   var session = liveSessions[idx];
-  document.getElementById('salesModalDate').textContent = session.date + (session.note ? ' · '+session.note : '');
+  document.getElementById('salesModalDate').textContent = formatDateDMY(session.date) + (session.note ? ' · '+session.note : '');
 
   var entries = getCombinedEntries();
   var wrap = document.getElementById('salesItemList');
